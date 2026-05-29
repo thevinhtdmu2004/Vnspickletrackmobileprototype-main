@@ -13,11 +13,13 @@ Track product-level decisions for VNS PickleTrack.
 | PD-001 | 2026-05-02 | Support 3 roles: Admin / Coach / Member | Required for full operating model | Accepted |
 | PD-002 | 2026-05-02 | Coach cannot view revenue | Protect business financial information | Accepted |
 | PD-003 | 2026-05-02 | Member only sees own data | Protect privacy and simplify UX | Accepted |
-| PD-004 | 2026-05-02 | Attendance has 5 MVP statuses | Covers class operation needs | Accepted |
+| PD-004 | 2026-05-02 | Attendance has 5 MVP statuses | Covers class operation needs | Superseded |
 | PD-005 | 2026-05-02 | Học bù deducts one session | Member consumes training session | Accepted |
 | PD-006 | 2026-05-02 | Member renewal is request-only | Admin must confirm payment/session update | Accepted |
 | PD-007 | 2026-05-02 | Freeze prototype after v1 | Avoid scope creep before review | Accepted |
 | PD-008 | 2026-05-02 | Disconnect Figma from GitHub | Prevent Figma overwriting repo docs/source | Accepted |
+| PD-009 | 2026-05-29 | Attendance has 4 MVP statuses (Removed "Late") | Simplify UX, not used in actual workflows | Accepted |
+| PD-010 | 2026-05-29 | Flexible Makeup Class Registration System | Allow members to register for makeup sessions arranged by coaches | Accepted |
 
 ---
 

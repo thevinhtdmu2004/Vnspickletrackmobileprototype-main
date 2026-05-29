@@ -28,16 +28,18 @@ export type Screen =
   | 'member-dashboard' | 'member-profile' | 'member-schedule'
   | 'member-package' | 'member-attendance-history' | 'member-payment-history'
   | 'member-renew-request' | 'member-session-warning' | 'member-contact'
+  | 'member-makeup-register' | 'member-course-materials' | 'member-learning-progress'
+  | 'member-trial-register' | 'member-course-list' | 'member-course-detail'
   /* Documentation */
   | 'screen-flow-doc';
 
 interface Flow {
-  id:      number;
-  name:    string;
-  desc:    string;
-  color:   string;
-  icon:    React.ReactNode;
-  steps:   { screen: Screen; label: string }[];
+  id: number;
+  name: string;
+  desc: string;
+  color: string;
+  icon: React.ReactNode;
+  steps: { screen: Screen; label: string }[];
 }
 
 const FLOWS: Flow[] = [
@@ -46,9 +48,9 @@ const FLOWS: Flow[] = [
     color: '#0E7C7B',
     icon: <LogIn style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'splash',    label: 'Splash Screen'    },
-      { screen: 'login',     label: 'Đăng nhập'        },
-      { screen: 'dashboard', label: 'Dashboard Admin'  },
+      { screen: 'splash', label: 'Splash Screen' },
+      { screen: 'login', label: 'Đăng nhập' },
+      { screen: 'dashboard', label: 'Dashboard Admin' },
     ],
   },
   {
@@ -56,9 +58,9 @@ const FLOWS: Flow[] = [
     color: '#2A9D8F',
     icon: <ClipboardCheck style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'dashboard',        label: 'Dashboard Admin'   },
-      { screen: 'today-classes',    label: 'Lớp hôm nay'       },
-      { screen: 'attendance-check', label: 'Điểm danh học viên'},
+      { screen: 'dashboard', label: 'Dashboard Admin' },
+      { screen: 'today-classes', label: 'Lớp hôm nay' },
+      { screen: 'attendance-check', label: 'Điểm danh học viên' },
     ],
   },
   {
@@ -66,9 +68,9 @@ const FLOWS: Flow[] = [
     color: '#F4A261',
     icon: <UserPlus style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'dashboard',      label: 'Dashboard Admin'   },
-      { screen: 'students-list',  label: 'Danh sách học viên'},
-      { screen: 'add-student',    label: 'Thêm học viên'     },
+      { screen: 'dashboard', label: 'Dashboard Admin' },
+      { screen: 'students-list', label: 'Danh sách học viên' },
+      { screen: 'add-student', label: 'Thêm học viên' },
       { screen: 'student-detail', label: 'Chi tiết học viên' },
     ],
   },
@@ -78,7 +80,7 @@ const FLOWS: Flow[] = [
     icon: <RefreshCw style={{ width: 14, height: 14 }} />,
     steps: [
       { screen: 'student-detail', label: 'Chi tiết học viên' },
-      { screen: 'renew-package',  label: 'Gia hạn gói học'  },
+      { screen: 'renew-package', label: 'Gia hạn gói học' },
       { screen: 'student-detail', label: 'Chi tiết học viên' },
     ],
   },
@@ -87,10 +89,10 @@ const FLOWS: Flow[] = [
     color: '#E76F51',
     icon: <BarChart3 style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'dashboard',       label: 'Dashboard Admin'       },
-      { screen: 'reports',         label: 'Báo cáo'               },
-      { screen: 'report-expiring', label: 'Sắp hết buổi'          },
-      { screen: 'renew-package',   label: 'Gia hạn gói học'       },
+      { screen: 'dashboard', label: 'Dashboard Admin' },
+      { screen: 'reports', label: 'Báo cáo' },
+      { screen: 'report-expiring', label: 'Sắp hết buổi' },
+      { screen: 'renew-package', label: 'Gia hạn gói học' },
     ],
   },
   {
@@ -98,9 +100,9 @@ const FLOWS: Flow[] = [
     color: '#815AD5',
     icon: <CloudUpload style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'dashboard', label: 'Dashboard Admin'  },
-      { screen: 'settings',  label: 'Cài đặt'          },
-      { screen: 'backup',    label: 'Sao lưu dữ liệu'  },
+      { screen: 'dashboard', label: 'Dashboard Admin' },
+      { screen: 'settings', label: 'Cài đặt' },
+      { screen: 'backup', label: 'Sao lưu dữ liệu' },
     ],
   },
   {
@@ -108,10 +110,10 @@ const FLOWS: Flow[] = [
     color: '#264653',
     icon: <Users style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'login',            label: 'Đăng nhập'         },
-      { screen: 'dashboard-coach',  label: 'Dashboard Coach'   },
-      { screen: 'today-classes',    label: 'Lớp hôm nay'       },
-      { screen: 'attendance-check', label: 'Điểm danh học viên'},
+      { screen: 'login', label: 'Đăng nhập' },
+      { screen: 'dashboard-coach', label: 'Dashboard Coach' },
+      { screen: 'today-classes', label: 'Lớp hôm nay' },
+      { screen: 'attendance-check', label: 'Điểm danh học viên' },
     ],
   },
   {
@@ -119,12 +121,12 @@ const FLOWS: Flow[] = [
     color: '#F4A261',
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'today-classes',           label: 'Lớp hôm nay'          },
-      { screen: 'select-class-session',    label: 'Tạo buổi học hôm nay' },
-      { screen: 'session-created-success', label: 'Tạo thành công'       },
-      { screen: 'session-detail',          label: 'Chi tiết buổi học'    },
-      { screen: 'cancel-session-dialog',   label: 'Dialog hủy buổi học'  },
-      { screen: 'complete-session-dialog', label: 'Dialog hoàn tất'      },
+      { screen: 'today-classes', label: 'Lớp hôm nay' },
+      { screen: 'select-class-session', label: 'Tạo buổi học hôm nay' },
+      { screen: 'session-created-success', label: 'Tạo thành công' },
+      { screen: 'session-detail', label: 'Chi tiết buổi học' },
+      { screen: 'cancel-session-dialog', label: 'Dialog hủy buổi học' },
+      { screen: 'complete-session-dialog', label: 'Dialog hoàn tất' },
     ],
   },
   {
@@ -132,9 +134,9 @@ const FLOWS: Flow[] = [
     color: '#E76F51',
     icon: <BarChart3 style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'class-detail',         label: 'Chi tiết lớp học'     },
-      { screen: 'assign-students',      label: 'Gán học viên'         },
-      { screen: 'suspend-class-dialog', label: 'Dialog ngưng lớp'     },
+      { screen: 'class-detail', label: 'Chi tiết lớp học' },
+      { screen: 'assign-students', label: 'Gán học viên' },
+      { screen: 'suspend-class-dialog', label: 'Dialog ngưng lớp' },
     ],
   },
   {
@@ -142,9 +144,9 @@ const FLOWS: Flow[] = [
     color: '#264653',
     icon: <RefreshCw style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'student-detail',  label: 'Chi tiết học viên'   },
-      { screen: 'edit-student',    label: 'Sửa học viên'        },
-      { screen: 'adjust-sessions', label: 'Điều chỉnh số buổi'  },
+      { screen: 'student-detail', label: 'Chi tiết học viên' },
+      { screen: 'edit-student', label: 'Sửa học viên' },
+      { screen: 'adjust-sessions', label: 'Điều chỉnh số buổi' },
     ],
   },
   {
@@ -152,8 +154,8 @@ const FLOWS: Flow[] = [
     color: '#E76F51',
     icon: <Users style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'student-detail',          label: 'Chi tiết học viên'        },
-      { screen: 'change-student-status',   label: 'Dialog đổi trạng thái'   },
+      { screen: 'student-detail', label: 'Chi tiết học viên' },
+      { screen: 'change-student-status', label: 'Dialog đổi trạng thái' },
     ],
   },
   {
@@ -162,7 +164,7 @@ const FLOWS: Flow[] = [
     icon: <Users style={{ width: 14, height: 14 }} />,
     steps: [
       { screen: 'user-management', label: 'Quản lý người dùng' },
-      { screen: 'add-user',        label: 'Thêm người dùng'    },
+      { screen: 'add-user', label: 'Thêm người dùng' },
     ],
   },
   {
@@ -170,8 +172,8 @@ const FLOWS: Flow[] = [
     color: '#0E7C7B',
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'settings',    label: 'Cài đặt'      },
-      { screen: 'change-pin',  label: 'Đổi mã PIN'   },
+      { screen: 'settings', label: 'Cài đặt' },
+      { screen: 'change-pin', label: 'Đổi mã PIN' },
     ],
   },
   {
@@ -188,8 +190,8 @@ const FLOWS: Flow[] = [
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
       { screen: 'attendance-dialogs-demo', label: 'Dialogs Điểm danh' },
-      { screen: 'dialogs-showcase',        label: 'Dialog Showcase'   },
-      { screen: 'confirm-dialogs',         label: 'Confirm Dialogs'   },
+      { screen: 'dialogs-showcase', label: 'Dialog Showcase' },
+      { screen: 'confirm-dialogs', label: 'Confirm Dialogs' },
     ],
   },
   {
@@ -197,9 +199,9 @@ const FLOWS: Flow[] = [
     color: '#264653',
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'sitemap',           label: 'Sitemap'           },
+      { screen: 'sitemap', label: 'Sitemap' },
       { screen: 'component-library', label: 'Component Library' },
-      { screen: 'dev-handoff',       label: 'Dev Handoff'       },
+      { screen: 'dev-handoff', label: 'Dev Handoff' },
     ],
   },
   {
@@ -207,10 +209,10 @@ const FLOWS: Flow[] = [
     color: '#2A9D8F',
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'member-dashboard',         label: 'Dashboard HV'       },
-      { screen: 'member-package',           label: 'Gói học'            },
-      { screen: 'member-session-warning',   label: 'Cảnh báo hết buổi' },
-      { screen: 'member-renew-request',     label: 'Gia hạn gói'       },
+      { screen: 'member-dashboard', label: 'Dashboard HV' },
+      { screen: 'member-package', label: 'Gói học' },
+      { screen: 'member-session-warning', label: 'Cảnh báo hết buổi' },
+      { screen: 'member-renew-request', label: 'Gia hạn gói' },
     ],
   },
   {
@@ -218,11 +220,11 @@ const FLOWS: Flow[] = [
     color: '#815AD5',
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
-      { screen: 'member-schedule',              label: 'Lịch học'           },
-      { screen: 'member-attendance-history',    label: 'Lịch sử học'       },
-      { screen: 'member-payment-history',       label: 'Thanh toán'        },
-      { screen: 'member-contact',               label: 'Liên hệ Coach'     },
-      { screen: 'member-profile',               label: 'Hồ sơ cá nhân'    },
+      { screen: 'member-schedule', label: 'Lịch học' },
+      { screen: 'member-attendance-history', label: 'Lịch sử học' },
+      { screen: 'member-payment-history', label: 'Thanh toán' },
+      { screen: 'member-contact', label: 'Liên hệ Coach' },
+      { screen: 'member-profile', label: 'Hồ sơ cá nhân' },
     ],
   },
   {
@@ -231,7 +233,7 @@ const FLOWS: Flow[] = [
     icon: <Award style={{ width: 14, height: 14 }} />,
     steps: [
       { screen: 'member-dashboard', label: 'Dashboard HV' },
-      { screen: 'student-report',   label: 'Thành tích học viên' },
+      { screen: 'student-report', label: 'Thành tích học viên' },
     ],
   },
   {
@@ -242,17 +244,46 @@ const FLOWS: Flow[] = [
       { screen: 'screen-flow-doc', label: 'Screen Flow Document' },
     ],
   },
+  {
+    id: 21, name: 'Học viên — Quá trình học', desc: 'Dashboard → Quá trình học → Tải lên video',
+    color: '#2A9D8F',
+    icon: <Play style={{ width: 14, height: 14 }} />,
+    steps: [
+      { screen: 'member-dashboard', label: 'Dashboard HV' },
+      { screen: 'member-learning-progress', label: 'Quá trình học' },
+    ],
+  },
+  {
+    id: 22, name: 'Học viên — Đăng ký học thử', desc: 'Dashboard → Đăng ký học thử → Gia hạn gói',
+    color: '#F4A261',
+    icon: <Play style={{ width: 14, height: 14 }} />,
+    steps: [
+      { screen: 'member-dashboard', label: 'Dashboard HV' },
+      { screen: 'member-trial-register', label: 'Đăng ký học thử' },
+      { screen: 'member-renew-request', label: 'Gia hạn gói học' },
+    ],
+  },
+  {
+    id: 23, name: 'Học viên — Đăng ký khóa học', desc: 'Dashboard → Khám phá khóa học → Chi tiết khóa học',
+    color: '#815AD5',
+    icon: <Play style={{ width: 14, height: 14 }} />,
+    steps: [
+      { screen: 'member-dashboard', label: 'Dashboard HV' },
+      { screen: 'member-course-list', label: 'Khám phá KH' },
+      { screen: 'member-course-detail', label: 'Chi tiết KH' },
+    ],
+  },
 ];
 
 interface PrototypeFlowPanelProps {
   currentScreen: Screen;
-  onJump:        (screen: Screen, role?: 'admin' | 'coach' | 'member') => void;
+  onJump: (screen: Screen, role?: 'admin' | 'coach' | 'member') => void;
 }
 
 export function PrototypeFlowPanel({ currentScreen, onJump }: PrototypeFlowPanelProps) {
-  const [open,        setOpen]        = useState(false);
-  const [activeFlow,  setActiveFlow]  = useState<number | null>(null);
-  const [minimised,   setMinimised]   = useState(false);
+  const [open, setOpen] = useState(false);
+  const [activeFlow, setActiveFlow] = useState<number | null>(null);
+  const [minimised, setMinimised] = useState(false);
 
   /* detect which flow the current screen belongs to */
   const matchedFlow = FLOWS.find(f => f.steps.some(s => s.screen === currentScreen));
@@ -260,9 +291,9 @@ export function PrototypeFlowPanel({ currentScreen, onJump }: PrototypeFlowPanel
   function startFlow(flow: Flow) {
     const first = flow.steps[0];
     const role: 'admin' | 'coach' | 'member' =
-      flow.id === 7                  ? 'coach'  :
-      flow.id === 17 || flow.id === 18 || flow.id === 19 ? 'member' :
-      'admin';
+      flow.id === 7 ? 'coach' :
+        flow.id === 17 || flow.id === 18 || flow.id === 19 || flow.id === 21 || flow.id === 22 || flow.id === 23 ? 'member' :
+          'admin';
     setActiveFlow(flow.id);
     setOpen(false);
     onJump(first.screen, role);
@@ -318,7 +349,7 @@ export function PrototypeFlowPanel({ currentScreen, onJump }: PrototypeFlowPanel
             <div className="flex-1">
               <p style={{ fontSize: '14px', fontWeight: 700 }}>Prototype Flows</p>
               <p className="text-muted-foreground" style={{ fontSize: '10px' }}>
-                20 flows · 46+ màn hình · 3 vai trò
+                23 flows · 49+ màn hình · 3 vai trò
               </p>
             </div>
             <button onClick={() => setOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center bg-muted/60">
@@ -453,7 +484,7 @@ export function PrototypeFlowPanel({ currentScreen, onJump }: PrototypeFlowPanel
                   key={i}
                   className="rounded-full transition-all"
                   style={{
-                    width:  i === currentStepIdx ? 12 : 5,
+                    width: i === currentStepIdx ? 12 : 5,
                     height: 5,
                     background: i <= currentStepIdx ? current.color : 'rgba(0,0,0,0.15)',
                   }}

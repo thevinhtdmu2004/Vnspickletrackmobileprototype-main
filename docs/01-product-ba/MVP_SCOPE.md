@@ -7,13 +7,13 @@
 | Authentication | Admin / Coach / Member login |
 | Dashboard | Role-specific dashboards |
 | Attendance | Today classes, session detail, attendance screen |
-| Attendance Status | Có mặt, Trễ, Học bù, Vắng, Nghỉ phép |
+| Attendance Status | Có mặt, Học bù, Vắng, Nghỉ phép (Đã xóa "Trễ" ngày 29/05/2026) |
 | Student/Member | List, add, edit, detail, history |
 | Class | List, add/edit, detail, assign students |
 | Package | Admin renewal, member renewal request |
 | Reports | Expiring members, attendance, class, student, revenue for Admin |
 | Settings | Backup, export, package/user management for Admin |
-| Member Portal | Schedule, package, history, profile, contact |
+| Member Portal | Schedule, package, history, profile, contact, makeup registration |
 | Documentation | Screen flow, component library, dev handoff |
 
 ## Out of Scope

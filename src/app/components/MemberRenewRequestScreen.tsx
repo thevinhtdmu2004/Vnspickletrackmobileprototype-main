@@ -244,9 +244,10 @@ function PackageCard({ pkg, selected, onSelect }: PackageCardProps) {
 interface MemberRenewRequestScreenProps {
   onBack?:     () => void;
   onNavigate?: (screen: string) => void;
+  onSubmit?:   () => void;
 }
 
-export function MemberRenewRequestScreen({ onBack, onNavigate }: MemberRenewRequestScreenProps) {
+export function MemberRenewRequestScreen({ onBack, onNavigate, onSubmit }: MemberRenewRequestScreenProps) {
   const [selectedId, setSelectedId] = useState<number>(2);    // default Gói 12
   const [note,       setNote]       = useState('');
   const [submitted,  setSubmitted]  = useState(false);
@@ -263,7 +264,11 @@ export function MemberRenewRequestScreen({ onBack, onNavigate }: MemberRenewRequ
       textRef.current.focus();
       return;
     }
-    setSubmitted(true);
+    if (onSubmit) {
+      onSubmit();
+    } else {
+      setSubmitted(true);
+    }
   }
 
   function handleBack() {

@@ -247,15 +247,14 @@ Member không được thấy:
 # 8. Attendance Rule
 Tạo bảng quy tắc điểm danh:
 
-Có mặt → Trừ buổi: Có
-Trễ → Trừ buổi: Có
-Học bù → Trừ buổi: Có
-Vắng → Trừ buổi: Không
-Nghỉ phép → Trừ buổi: Không
+Có mặt → Khấu trừ gói: Có
+Học bù → Khấu trừ gói: Có
+Vắng → Khấu trừ gói: Không
+Nghỉ phép → Khấu trừ gói: Không
 
 Lưu ý:
 - Đây là nghiệp vụ quan trọng nhất.
-- Học bù phải được tính là trừ buổi.
+- Học bù phải được tính là khấu trừ gói.
 
 # 9. Permission Matrix
 Tạo bảng ma trận quyền với các cột:
@@ -314,8 +313,8 @@ Tạo checklist:
 - Admin xem được doanh thu.
 - Coach không xem được doanh thu.
 - Member không thấy menu Admin/Coach.
-- Điểm danh có đủ 5 trạng thái.
-- Học bù được tính là trừ buổi.
+- Điểm danh có đủ 4 trạng thái.
+- Học bù được tính là khấu trừ gói.
 - Member gửi được yêu cầu gia hạn.
 - Admin backup flow chạy được.
 

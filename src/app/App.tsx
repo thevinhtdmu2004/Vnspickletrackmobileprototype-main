@@ -1,81 +1,87 @@
 import { useState, useEffect, useRef } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, PlusCircle, FileText, ArrowLeft } from 'lucide-react';
 
 /* ── Component imports ── */
-import { SplashScreen }             from './components/SplashScreen';
-import { LoginScreen }              from './components/LoginScreen';
-import { DashboardAdmin }           from './components/DashboardAdmin';
-import { DashboardCoach }           from './components/DashboardCoach';
-import { TodayClassesScreen }       from './components/TodayClassesScreen';
-import { AttendanceCheckScreen }    from './components/AttendanceCheckScreen';
-import { StudentsListScreen }       from './components/StudentsListScreen';
-import { AddStudentScreen }         from './components/AddStudentScreen';
-import { StudentDetailScreen }      from './components/StudentDetailScreen';
-import { EditStudentScreen }        from './components/EditStudentScreen';
-import { RenewPackageScreen }       from './components/RenewPackageScreen';
-import { PaymentHistoryScreen }     from './components/PaymentHistoryScreen';
-import { AttendanceHistoryScreen }  from './components/AttendanceHistoryScreen';
-import { ReportsPage }              from './components/ReportsPage';
-import { ReportExpiringScreen }     from './components/ReportExpiringScreen';
-import { RevenueReportScreen }      from './components/RevenueReportScreen';
-import { SettingsPage }             from './components/SettingsPage';
-import { BackupScreen }             from './components/BackupScreen';
-import { ClassListScreen }          from './components/ClassListScreen';
-import { AddClassScreen }           from './components/AddClassScreen';
-import { EditClassScreen }          from './components/EditClassScreen';
-import { ClassDetailScreen }        from './components/ClassDetailScreen';
-import { AssignStudentsScreen }     from './components/AssignStudentsScreen';
+import { SplashScreen } from './components/SplashScreen';
+import { LoginScreen } from './components/LoginScreen';
+import { DashboardAdmin } from './components/DashboardAdmin';
+import { DashboardCoach } from './components/DashboardCoach';
+import { TodayClassesScreen } from './components/TodayClassesScreen';
+import { AttendanceCheckScreen } from './components/AttendanceCheckScreen';
+import { StudentsListScreen } from './components/StudentsListScreen';
+import { AddStudentScreen } from './components/AddStudentScreen';
+import { StudentDetailScreen } from './components/StudentDetailScreen';
+import { EditStudentScreen } from './components/EditStudentScreen';
+import { RenewPackageScreen } from './components/RenewPackageScreen';
+import { PaymentHistoryScreen } from './components/PaymentHistoryScreen';
+import { AttendanceHistoryScreen } from './components/AttendanceHistoryScreen';
+import { ReportsPage } from './components/ReportsPage';
+import { ReportExpiringScreen } from './components/ReportExpiringScreen';
+import { RevenueReportScreen } from './components/RevenueReportScreen';
+import { SettingsPage } from './components/SettingsPage';
+import { BackupScreen } from './components/BackupScreen';
+import { ClassListScreen } from './components/ClassListScreen';
+import { AddClassScreen } from './components/AddClassScreen';
+import { EditClassScreen } from './components/EditClassScreen';
+import { ClassDetailScreen } from './components/ClassDetailScreen';
+import { AssignStudentsScreen } from './components/AssignStudentsScreen';
 import { SelectClassForSessionScreen } from './components/SelectClassForSessionScreen';
-import { SessionDetailScreen }      from './components/SessionDetailScreen';
-import { CompleteSessionScreen }    from './components/CompleteSessionScreen';
+import { SessionDetailScreen } from './components/SessionDetailScreen';
+import { CompleteSessionScreen } from './components/CompleteSessionScreen';
 import { MonthlySessionReportScreen } from './components/MonthlySessionReportScreen';
-import { ExportCSVScreen }            from './components/ExportCSVScreen';
-import { RestoreDataScreen }          from './components/RestoreDataScreen';
-import { PackageManagementScreen }    from './components/PackageManagementScreen';
-import { PackageFormScreen }          from './components/PackageFormScreen';
+import { ExportCSVScreen } from './components/ExportCSVScreen';
+import { RestoreDataScreen } from './components/RestoreDataScreen';
+import { PackageManagementScreen } from './components/PackageManagementScreen';
+import { PackageFormScreen } from './components/PackageFormScreen';
 import { SessionCreatedSuccessScreen } from './components/SessionCreatedSuccessScreen';
-import { ClassReportScreen }          from './components/ClassReportScreen';
-import { StudentReportScreen }        from './components/StudentReportScreen';
-import { BackupSuccessScreen }        from './components/BackupSuccessScreen';
-import { PrototypeFlowPanel }         from './components/PrototypeFlowPanel';
-import type { Screen }                from './components/PrototypeFlowPanel';
-import { BottomNavigation }          from './components/BottomNavigation';
-import { UserManagementScreen }      from './components/UserManagementScreen';
-import { AddUserScreen }             from './components/AddUserScreen';
-import { ChangePINScreen }           from './components/ChangePINScreen';
-import { EmptyStatesScreen }         from './components/EmptyStates';
-import { AccessDeniedScreen }        from './components/AccessDeniedScreen';
+import { ClassReportScreen } from './components/ClassReportScreen';
+import { StudentReportScreen } from './components/StudentReportScreen';
+import { BackupSuccessScreen } from './components/BackupSuccessScreen';
+import { PrototypeFlowPanel } from './components/PrototypeFlowPanel';
+import type { Screen } from './components/PrototypeFlowPanel';
+import { BottomNavigation } from './components/BottomNavigation';
+import { UserManagementScreen } from './components/UserManagementScreen';
+import { AddUserScreen } from './components/AddUserScreen';
+import { ChangePINScreen } from './components/ChangePINScreen';
+import { EmptyStatesScreen } from './components/EmptyStates';
+import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 
 /* ── Newly wired screens ── */
-import { AdjustSessionsScreen }            from './components/AdjustSessionsScreen';
+import { AdjustSessionsScreen } from './components/AdjustSessionsScreen';
 import { ChangeStudentStatusDialogScreen } from './components/ChangeStudentStatusDialog';
-import { CancelSessionDialog }             from './components/CancelSessionDialog';
-import { CompleteSessionDialog }           from './components/CompleteSessionDialog';
-import { SuspendClassDialog }              from './components/SuspendClassDialog';
-import { DialogsShowcase }                 from './components/DialogsShowcase';
-import { AttendanceDialogsDemo }           from './components/AttendanceDialogsDemo';
-import { ImportantConfirmDialogScreen }    from './components/ImportantConfirmDialogScreen';
-import { ComponentLibraryScreen }          from './components/ComponentLibraryScreen';
-import { DevHandoffScreen }                from './components/DevHandoffScreen';
-import { Sitemap }                         from './components/Sitemap';
-import { ScreenFlowDocument }              from './components/ScreenFlowDocument';
+import { CancelSessionDialog } from './components/CancelSessionDialog';
+import { CompleteSessionDialog } from './components/CompleteSessionDialog';
+import { SuspendClassDialog } from './components/SuspendClassDialog';
+import { DialogsShowcase } from './components/DialogsShowcase';
+import { AttendanceDialogsDemo } from './components/AttendanceDialogsDemo';
+import { ImportantConfirmDialogScreen } from './components/ImportantConfirmDialogScreen';
+import { ComponentLibraryScreen } from './components/ComponentLibraryScreen';
+import { DevHandoffScreen } from './components/DevHandoffScreen';
+import { Sitemap } from './components/Sitemap';
+import { ScreenFlowDocument } from './components/ScreenFlowDocument';
 
 /* ── Member / Student role screens ── */
-import { MemberDashboard }                 from './components/MemberDashboard';
-import { MemberProfileScreen }             from './components/MemberProfileScreen';
-import { MemberScheduleScreen }            from './components/MemberScheduleScreen';
-import { MemberPackageScreen }             from './components/MemberPackageScreen';
-import { MemberAttendanceHistoryScreen }   from './components/MemberAttendanceHistoryScreen';
-import { MemberPaymentHistoryScreen }      from './components/MemberPaymentHistoryScreen';
-import { MemberRenewRequestScreen }        from './components/MemberRenewRequestScreen';
-import { MemberSessionWarningScreen }      from './components/MemberSessionWarningScreen';
-import { MemberContactScreen }             from './components/MemberContactScreen';
-import { MemberBottomNavigation }          from './components/MemberBottomNavigation';
+import { MemberDashboard } from './components/MemberDashboard';
+import { MemberProfileScreen } from './components/MemberProfileScreen';
+import { MemberScheduleScreen } from './components/MemberScheduleScreen';
+import { MemberPackageScreen } from './components/MemberPackageScreen';
+import { MemberAttendanceHistoryScreen } from './components/MemberAttendanceHistoryScreen';
+import { MemberPaymentHistoryScreen } from './components/MemberPaymentHistoryScreen';
+import { MemberRenewRequestScreen } from './components/MemberRenewRequestScreen';
+import { MemberSessionWarningScreen } from './components/MemberSessionWarningScreen';
+import { MemberContactScreen } from './components/MemberContactScreen';
+import { MemberMakeupRegisterScreen } from './components/MemberMakeupRegisterScreen';
+import { MemberCourseMaterialsScreen } from './components/MemberCourseMaterialsScreen';
+import { MemberLearningProgressScreen } from './components/MemberLearningProgressScreen';
+import { MemberTrialRegisterScreen } from './components/MemberTrialRegisterScreen';
+import { MemberBottomNavigation } from './components/MemberBottomNavigation';
+import { MemberCourseListScreen } from './components/MemberCourseListScreen';
+import { MemberCourseDetailScreen } from './components/MemberCourseDetailScreen';
 
 /* ── Success Dialog ── */
 interface SuccessDialogProps {
-  message:  string;
-  onClose:  () => void;
+  message: string;
+  onClose: () => void;
 }
 function SuccessDialog({ message, onClose }: SuccessDialogProps) {
   useEffect(() => {
@@ -202,6 +208,12 @@ const SCREEN_LABELS: Partial<Record<Screen, string>> = {
   'member-attendance-history': 'Lịch sử học Hội viên',
   'member-payment-history': 'Lịch sử thanh toán Hội viên',
   'member-renew-request': 'Yêu cầu gia hạn',
+  'member-makeup-register': 'Đăng ký học bù',
+  'member-course-materials': 'Tài liệu khóa học',
+  'member-learning-progress': 'Quá trình học',
+  'member-trial-register': 'Đăng ký học thử',
+  'member-course-list': 'Khám phá khóa học',
+  'member-course-detail': 'Chi tiết khóa học',
 };
 
 function normalizeScreen(screen: Screen): Screen {
@@ -232,15 +244,15 @@ function canAccessScreen(screen: Screen, role: Role) {
 
 export default function App() {
   /* ── Navigation stack ── */
-  const [stack,   setStack]   = useState<Screen[]>(['splash']);
-  const [dir,     setDir]     = useState<'forward' | 'back' | 'tab'>('forward');
+  const [stack, setStack] = useState<Screen[]>(['splash']);
+  const [dir, setDir] = useState<'forward' | 'back' | 'tab'>('forward');
   const [animKey, setAnimKey] = useState(0);
 
   /* ── Role ── */
   const [role, setRole] = useState<Role>('admin');
 
   /* ── Success dialog ── */
-  const [successMsg,  setSuccessMsg]  = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const successCb = useRef<(() => void) | null>(null);
 
   /* ── Current screen ── */
@@ -608,7 +620,7 @@ export default function App() {
       case 'cancel-session-dialog':
         return (
           <div className="relative h-screen flex flex-col items-center justify-end bg-gray-900/60">
-            <div className="absolute inset-0 bg-[#F7F9FA]" style={{ filter:'blur(2px)', opacity:0.5 }} />
+            <div className="absolute inset-0 bg-[#F7F9FA]" style={{ filter: 'blur(2px)', opacity: 0.5 }} />
             <CancelSessionDialog
               visible={true}
               onClose={goBack}
@@ -798,6 +810,51 @@ export default function App() {
           />
         );
 
+      case 'member-makeup-register':
+        return (
+          <MemberMakeupRegisterScreen
+            onBack={goBack}
+          />
+        );
+
+      case 'member-course-materials':
+        return (
+          <MemberCourseMaterialsScreen
+            onBack={goBack}
+          />
+        );
+
+      case 'member-learning-progress':
+        return (
+          <MemberLearningProgressScreen
+            onBack={goBack}
+          />
+        );
+
+      case 'member-trial-register':
+        return (
+          <MemberTrialRegisterScreen
+            onBack={goBack}
+            onNavigate={(s) => navigate(s as Screen)}
+          />
+        );
+
+      case 'member-course-list':
+        return (
+          <MemberCourseListScreen
+            onBack={goBack}
+            onCourseDetail={() => navigate('member-course-detail')}
+          />
+        );
+
+      case 'member-course-detail':
+        return (
+          <MemberCourseDetailScreen
+            onBack={goBack}
+            onRegister={() => showSuccess('Đăng ký khóa học thành công! HLV sẽ liên hệ sớm.', () => navigate('member-dashboard', true))}
+          />
+        );
+
       default:
         return <DashboardAdmin onNavigate={(s) => navigate(s as Screen)} />;
     }
@@ -806,11 +863,11 @@ export default function App() {
   /* ── Tab bar handler ── */
   function handleTabChange(tab: string) {
     const tabMap: Record<string, Screen> = {
-      'home':          homeForRole(role),
+      'home': homeForRole(role),
       'today-classes': 'today-classes',
       'students-list': 'students-list',
-      'reports':       'reports',
-      'settings':      'settings',
+      'reports': 'reports',
+      'settings': 'settings',
     };
     const target = tabMap[tab] ?? (tab as Screen);
     switchTab(target);
@@ -829,46 +886,46 @@ export default function App() {
           />
         </div>
       ) : (
-      /* ── Device frame ── */
-      <div
-        className="max-w-[390px] mx-auto min-h-screen bg-background relative overflow-hidden shadow-2xl"
-        style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.12)' }}
-      >
-        {/* ── Screen with transition ── */}
+        /* ── Device frame ── */
         <div
-          key={animKey}
-          className={`h-screen overflow-y-auto ${animClass}`}
+          className="max-w-[390px] mx-auto min-h-screen bg-background relative overflow-hidden shadow-2xl"
+          style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.12)' }}
         >
-          {renderScreen()}
+          {/* ── Screen with transition ── */}
+          <div
+            key={animKey}
+            className={`h-screen overflow-y-auto ${animClass}`}
+          >
+            {renderScreen()}
+          </div>
+
+          {/* ── Bottom nav ── */}
+          {showNav && (
+            <BottomNavigation
+              currentTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+          )}
+
+          {/* ── Member Bottom nav ── */}
+          {showMemberNav && (
+            <MemberBottomNavigation
+              currentTab={memberTabActive}
+              onTabChange={(tab) => switchTab(tab as Screen)}
+            />
+          )}
+
+          {/* ── Success overlay ── */}
+          {successMsg && (
+            <SuccessDialog message={successMsg} onClose={onSuccessClose} />
+          )}
+
+          {/* ── Prototype Flow Panel ── */}
+          <PrototypeFlowPanel
+            currentScreen={currentScreen as Screen}
+            onJump={handleJump}
+          />
         </div>
-
-        {/* ── Bottom nav ── */}
-        {showNav && (
-          <BottomNavigation
-            currentTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        )}
-
-        {/* ── Member Bottom nav ── */}
-        {showMemberNav && (
-          <MemberBottomNavigation
-            currentTab={memberTabActive}
-            onTabChange={(tab) => switchTab(tab as Screen)}
-          />
-        )}
-
-        {/* ── Success overlay ── */}
-        {successMsg && (
-          <SuccessDialog message={successMsg} onClose={onSuccessClose} />
-        )}
-
-        {/* ── Prototype Flow Panel ── */}
-        <PrototypeFlowPanel
-          currentScreen={currentScreen as Screen}
-          onJump={handleJump}
-        />
-      </div>
       )}
     </div>
   );

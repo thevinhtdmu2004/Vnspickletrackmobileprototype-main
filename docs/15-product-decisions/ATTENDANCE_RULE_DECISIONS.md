@@ -8,10 +8,11 @@ Defines product decisions for attendance status and deduction rules.
 
 ## 2. MVP Attendance Statuses
 
+*(Updated on 2026-05-29: Removed "Late / Trễ" status as per user request/change decision)*
+
 | Status | Vietnamese | Deduct Session |
 |---|---|---:|
 | Present | Có mặt | Yes |
-| Late | Trễ | Yes |
 | Makeup | Học bù | Yes |
 | Absent | Vắng | No |
 | Leave | Nghỉ phép | No |
@@ -28,6 +29,32 @@ Reason:
 
 ```text
 The member still consumes training time even if the session is a makeup session.
+```
+
+---
+
+## 3.1 Makeup Class Registration Rules (Flexible)
+
+*(Added on 2026-05-29: Flexible makeup class registration system)*
+
+Members can register for makeup sessions with the following rules:
+
+| Rule | Details |
+|---|---|
+| **Absence Limit** | Members can register for makeup if absences < 2 |
+| **Session Selection** | Members can choose from available makeup sessions |
+| **Flexible Scheduling** | Makeup sessions are arranged by coaches and can change based on needs |
+| **Registration Window** | Members can register anytime during their course period |
+| **Late Penalty** | If arriving > 45 minutes late, the session is cancelled |
+| **Deduction** | Makeup session still deducts one session from package |
+
+**Rationale:**
+
+```text
+- Flexible scheduling accommodates member availability
+- Coach-arranged sessions ensure proper class balance
+- Absence limit prevents abuse of makeup system
+- Late penalty ensures session quality
 ```
 
 ---

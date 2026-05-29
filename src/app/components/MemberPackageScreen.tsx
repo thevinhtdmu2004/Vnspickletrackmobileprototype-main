@@ -240,9 +240,10 @@ function SuccessToast({ pkg, onDismiss }: { pkg: typeof SUGGESTIONS[0]; onDismis
 ══════════════════════════════════════════════════════ */
 interface MemberPackageScreenProps {
   onNavigate?: (screen: string) => void;
+  onRenew?:    () => void;
 }
 
-export function MemberPackageScreen({ onNavigate }: MemberPackageScreenProps) {
+export function MemberPackageScreen({ onNavigate, onRenew }: MemberPackageScreenProps) {
   const [showSheet,   setShowSheet]   = useState(false);
   const [sentPkg,     setSentPkg]     = useState<typeof SUGGESTIONS[0] | null>(null);
 
@@ -406,7 +407,10 @@ export function MemberPackageScreen({ onNavigate }: MemberPackageScreenProps) {
               RENEW CTA BUTTON
           ───────────────────────────────────────── */}
           <button
-            onClick={() => setShowSheet(true)}
+            onClick={() => {
+              if (onRenew) onRenew();
+              else setShowSheet(true);
+            }}
             className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl active:scale-98 transition-all"
             style={{
               background: 'linear-gradient(135deg,#0E7C7B 0%,#2A9D8F 100%)',

@@ -15,19 +15,19 @@ import {
 
 /* ═══════════ DESIGN TOKENS ═══════════ */
 const C = {
-  bg:      '#F7F9FA',
-  card:    '#FFFFFF',
-  pri:     '#0E7C7B',
-  priDim:  'rgba(14,124,123,0.10)',
-  acc:     '#F4A261',
-  warn:    '#E9C46A',
-  danger:  '#E76F51',
-  text:    '#1F2933',
-  sub:     '#6B7280',
-  border:  'rgba(0,0,0,0.07)',
-  admin:   '#0E7C7B',
-  coach:   '#264653',
-  member:  '#815AD5',
+  bg: '#F7F9FA',
+  card: '#FFFFFF',
+  pri: '#0E7C7B',
+  priDim: 'rgba(14,124,123,0.10)',
+  acc: '#F4A261',
+  warn: '#E9C46A',
+  danger: '#E76F51',
+  text: '#1F2933',
+  sub: '#6B7280',
+  border: 'rgba(0,0,0,0.07)',
+  admin: '#0E7C7B',
+  coach: '#264653',
+  member: '#815AD5',
 };
 
 /* ═══════════ SUB-COMPONENTS ═══════════ */
@@ -63,9 +63,9 @@ function Card({ children, style, className }: { children: React.ReactNode; style
 
 function RoleBadge({ role }: { role: 'admin' | 'coach' | 'member' }) {
   const cfg = {
-    admin:  { label: 'Admin',    color: C.admin,  bg: 'rgba(14,124,123,0.10)',  Icon: Shield   },
-    coach:  { label: 'Coach',    color: C.coach,  bg: 'rgba(38,70,83,0.10)',    Icon: Dumbbell },
-    member: { label: 'Hội viên', color: C.member, bg: 'rgba(129,90,213,0.10)', Icon: User     },
+    admin: { label: 'Admin', color: C.admin, bg: 'rgba(14,124,123,0.10)', Icon: Shield },
+    coach: { label: 'Coach', color: C.coach, bg: 'rgba(38,70,83,0.10)', Icon: Dumbbell },
+    member: { label: 'Hội viên', color: C.member, bg: 'rgba(129,90,213,0.10)', Icon: User },
   }[role];
   return (
     <span
@@ -84,10 +84,10 @@ function FlowStep({ label, active, color }: { label: string; active?: boolean; c
       className="px-3 py-1.5 rounded-lg flex-shrink-0"
       style={{
         background: active ? color : `${color}14`,
-        color:      active ? 'white' : color,
-        fontSize:   11,
+        color: active ? 'white' : color,
+        fontSize: 11,
         fontWeight: 700,
-        border:     `1px solid ${color}30`,
+        border: `1px solid ${color}30`,
         whiteSpace: 'nowrap',
       }}
     >{label}</div>
@@ -116,10 +116,10 @@ function FlowRow({ steps, color, label }: { steps: string[]; color: string; labe
 
 type PermType = 'yes' | 'no' | 'limited' | 'self' | 'request';
 function PermCell({ type, note }: { type: PermType; note?: string }) {
-  if (type === 'yes')     return <div className="flex justify-center"><Check style={{ width: 16, height: 16, color: '#2A9D8F' }} /></div>;
-  if (type === 'no')      return <div className="flex justify-center"><X style={{ width: 15, height: 15, color: '#D1D5DB' }} /></div>;
+  if (type === 'yes') return <div className="flex justify-center"><Check style={{ width: 16, height: 16, color: '#2A9D8F' }} /></div>;
+  if (type === 'no') return <div className="flex justify-center"><X style={{ width: 15, height: 15, color: '#D1D5DB' }} /></div>;
   if (type === 'limited') return <span style={{ fontSize: 10, fontWeight: 700, color: C.warn, whiteSpace: 'nowrap' }}>{note ?? 'Giới hạn'}</span>;
-  if (type === 'self')    return <span style={{ fontSize: 10, fontWeight: 700, color: '#4B6CB7', whiteSpace: 'nowrap' }}>{note ?? 'Bản thân'}</span>;
+  if (type === 'self') return <span style={{ fontSize: 10, fontWeight: 700, color: '#4B6CB7', whiteSpace: 'nowrap' }}>{note ?? 'Bản thân'}</span>;
   if (type === 'request') return <span style={{ fontSize: 10, fontWeight: 700, color: C.acc, whiteSpace: 'nowrap' }}>{note ?? 'Gửi YC'}</span>;
   return null;
 }
@@ -127,7 +127,7 @@ function PermCell({ type, note }: { type: PermType; note?: string }) {
 /* ═══════════ DATA ═══════════ */
 const SITEMAP = [
   { depth: 0, label: 'VNS PickleTrack', color: C.pri, bold: true },
-  { depth: 1, label: 'Splash Screen',   color: C.sub },
+  { depth: 1, label: 'Splash Screen', color: C.sub },
   { depth: 1, label: 'Màn hình đăng nhập', color: C.sub },
   { depth: 1, label: '📌 ADMIN AREA', color: C.admin, bold: true },
   { depth: 2, label: 'Dashboard Admin' },
@@ -181,42 +181,41 @@ const SITEMAP = [
 ];
 
 const ATTENDANCE_RULES = [
-  { status: 'Có mặt',   Icon: CheckCircle2, color: '#2A9D8F', deduct: true,  note: 'Học viên có mặt, buổi học bình thường' },
-  { status: 'Trễ',      Icon: Clock,        color: '#E9C46A', deduct: true,  note: 'Đến muộn nhưng vẫn học, tính 1 buổi' },
-  { status: 'Học bù',   Icon: RotateCcw,    color: '#0E7C7B', deduct: true,  note: '⚠️ Nghiệp vụ quan trọng — bù buổi đã nghỉ, vẫn trừ' },
-  { status: 'Vắng',     Icon: XCircle,      color: '#E76F51', deduct: false, note: 'Không đến, không báo — không trừ buổi' },
+  { status: 'Có mặt', Icon: CheckCircle2, color: '#2A9D8F', deduct: true, note: 'Học viên có mặt, buổi học bình thường' },
+  { status: 'Học bù', Icon: RotateCcw, color: '#0E7C7B', deduct: true, note: '⚠️ Nghiệp vụ quan trọng — bù buổi đã nghỉ, vẫn khấu trừ' },
+  { status: 'Vắng', Icon: XCircle, color: '#E76F51', deduct: false, note: 'Không đến, không báo — không khấu trừ' },
   { status: 'Nghỉ phép', Icon: MinusCircle, color: '#4B6CB7', deduct: false, note: 'Đã báo trước, giữ nguyên số buổi' },
 ];
 
 const PERMISSIONS: { feature: string; admin: PermType; coach: PermType; member: PermType; coachNote?: string; memberNote?: string }[] = [
-  { feature: 'Dashboard Admin',                  admin: 'yes', coach: 'no',      member: 'no'                                              },
-  { feature: 'Dashboard Coach',                  admin: 'no',  coach: 'yes',     member: 'no'                                              },
-  { feature: 'Member Dashboard',                 admin: 'no',  coach: 'no',      member: 'yes'                                             },
-  { feature: 'Lớp hôm nay',                      admin: 'yes', coach: 'yes',     member: 'no'                                              },
-  { feature: 'Điểm danh học viên',               admin: 'yes', coach: 'yes',     member: 'no'                                              },
-  { feature: 'Danh sách học viên toàn HT',       admin: 'yes', coach: 'limited', member: 'no',      coachNote: 'Lớp mình'                  },
-  { feature: 'Chi tiết học viên',                admin: 'yes', coach: 'limited', member: 'self',    coachNote: 'Lớp mình'                  },
-  { feature: 'Gia hạn gói học',                  admin: 'yes', coach: 'no',      member: 'request'                                         },
-  { feature: 'Doanh thu tháng 🔒',               admin: 'yes', coach: 'no',      member: 'no'                                              },
-  { feature: 'Báo cáo vận hành',                 admin: 'yes', coach: 'yes',     member: 'no'                                              },
-  { feature: 'Backup dữ liệu',                   admin: 'yes', coach: 'no',      member: 'no'                                              },
-  { feature: 'Quản lý gói học',                  admin: 'yes', coach: 'no',      member: 'no'                                              },
-  { feature: 'Quản lý người dùng',               admin: 'yes', coach: 'no',      member: 'no'                                              },
-  { feature: 'Settings đầy đủ',                  admin: 'yes', coach: 'limited', member: 'no',      coachNote: 'Chỉ PIN & Info'             },
-  { feature: 'Lịch học của tôi',                 admin: 'no',  coach: 'no',      member: 'yes'                                             },
-  { feature: 'Gói học của tôi',                  admin: 'no',  coach: 'no',      member: 'yes'                                             },
-  { feature: 'Hồ sơ của tôi',                    admin: 'no',  coach: 'no',      member: 'yes'                                             },
-  { feature: 'AccessDeniedScreen (khi vi phạm)', admin: 'no',  coach: 'limited', member: 'limited', coachNote: 'Truy cập DT', memberNote: 'Truy cập DT' },
+  { feature: 'Dashboard Admin', admin: 'yes', coach: 'no', member: 'no' },
+  { feature: 'Dashboard Coach', admin: 'no', coach: 'yes', member: 'no' },
+  { feature: 'Member Dashboard', admin: 'no', coach: 'no', member: 'yes' },
+  { feature: 'Lớp hôm nay', admin: 'yes', coach: 'yes', member: 'no' },
+  { feature: 'Điểm danh học viên', admin: 'yes', coach: 'yes', member: 'no' },
+  { feature: 'Danh sách học viên toàn HT', admin: 'yes', coach: 'limited', member: 'no', coachNote: 'Lớp mình' },
+  { feature: 'Chi tiết học viên', admin: 'yes', coach: 'limited', member: 'self', coachNote: 'Lớp mình' },
+  { feature: 'Gia hạn gói học', admin: 'yes', coach: 'no', member: 'request' },
+  { feature: 'Doanh thu tháng 🔒', admin: 'yes', coach: 'no', member: 'no' },
+  { feature: 'Báo cáo vận hành', admin: 'yes', coach: 'yes', member: 'no' },
+  { feature: 'Backup dữ liệu', admin: 'yes', coach: 'no', member: 'no' },
+  { feature: 'Quản lý gói học', admin: 'yes', coach: 'no', member: 'no' },
+  { feature: 'Quản lý người dùng', admin: 'yes', coach: 'no', member: 'no' },
+  { feature: 'Settings đầy đủ', admin: 'yes', coach: 'limited', member: 'no', coachNote: 'Chỉ PIN & Info' },
+  { feature: 'Lịch học của tôi', admin: 'no', coach: 'no', member: 'yes' },
+  { feature: 'Gói học của tôi', admin: 'no', coach: 'no', member: 'yes' },
+  { feature: 'Hồ sơ của tôi', admin: 'no', coach: 'no', member: 'yes' },
+  { feature: 'AccessDeniedScreen (khi vi phạm)', admin: 'no', coach: 'limited', member: 'limited', coachNote: 'Truy cập DT', memberNote: 'Truy cập DT' },
 ];
 
 const DEMO_FLOWS: { id: number; title: string; role: 'admin' | 'coach' | 'member'; color: string; steps: string[] }[] = [
-  { id: 1, title: 'Admin điểm danh',           role: 'admin',  color: C.admin,  steps: ['Login Admin', 'Dashboard Admin', 'Lớp hôm nay', 'Chi tiết buổi', 'Điểm danh học viên', 'Lưu điểm danh'] },
-  { id: 2, title: 'Admin thêm HV & gia hạn',  role: 'admin',  color: '#2A9D8F', steps: ['Login Admin', 'Học viên', 'Thêm học viên', 'Chi tiết học viên', 'Gia hạn gói', 'Success'] },
-  { id: 3, title: 'Admin tạo lớp & gán HV',   role: 'admin',  color: C.acc,    steps: ['Login Admin', 'Lớp học', 'Thêm lớp', 'Chi tiết lớp', 'Gán học viên', 'Lưu'] },
-  { id: 4, title: 'Coach điểm danh',           role: 'coach',  color: C.coach,  steps: ['Login Coach', 'Dashboard Coach', 'Lớp hôm nay', 'Điểm danh học viên', 'Lưu điểm danh'] },
-  { id: 5, title: 'Hội viên xem thông tin',    role: 'member', color: C.member, steps: ['Login Member', 'Member Dashboard', 'Gói học', 'Lịch học', 'Lịch sử', 'Hồ sơ'] },
+  { id: 1, title: 'Admin điểm danh', role: 'admin', color: C.admin, steps: ['Login Admin', 'Dashboard Admin', 'Lớp hôm nay', 'Chi tiết buổi', 'Điểm danh học viên', 'Lưu điểm danh'] },
+  { id: 2, title: 'Admin thêm HV & gia hạn', role: 'admin', color: '#2A9D8F', steps: ['Login Admin', 'Học viên', 'Thêm học viên', 'Chi tiết học viên', 'Gia hạn gói', 'Success'] },
+  { id: 3, title: 'Admin tạo lớp & gán HV', role: 'admin', color: C.acc, steps: ['Login Admin', 'Lớp học', 'Thêm lớp', 'Chi tiết lớp', 'Gán học viên', 'Lưu'] },
+  { id: 4, title: 'Coach điểm danh', role: 'coach', color: C.coach, steps: ['Login Coach', 'Dashboard Coach', 'Lớp hôm nay', 'Điểm danh học viên', 'Lưu điểm danh'] },
+  { id: 5, title: 'Hội viên xem thông tin', role: 'member', color: C.member, steps: ['Login Member', 'Member Dashboard', 'Gói học', 'Lịch học', 'Lịch sử', 'Hồ sơ'] },
   { id: 6, title: 'Hội viên yêu cầu gia hạn', role: 'member', color: '#815AD5', steps: ['Login Member', 'Gói học của tôi', 'Yêu cầu gia hạn', 'Gửi yêu cầu', 'Success'] },
-  { id: 7, title: 'Admin backup dữ liệu',      role: 'admin',  color: '#4B6CB7', steps: ['Login Admin', 'Cài đặt', 'Sao lưu dữ liệu', 'Sao lưu ngay', 'Thành công'] },
+  { id: 7, title: 'Admin backup dữ liệu', role: 'admin', color: '#4B6CB7', steps: ['Login Admin', 'Cài đặt', 'Sao lưu dữ liệu', 'Sao lưu ngay', 'Thành công'] },
 ];
 
 const CHECKLIST = [
@@ -226,8 +225,8 @@ const CHECKLIST = [
   'Admin xem được doanh thu tháng',
   'Coach không xem được doanh thu',
   'Member không thấy menu Admin / Coach',
-  'Điểm danh có đủ 5 trạng thái (Có mặt, Trễ, Học bù, Vắng, Nghỉ phép)',
-  'Học bù được tính là trừ buổi (deduct: true)',
+  'Điểm danh có đủ 4 trạng thái (Có mặt, Học bù, Vắng, Nghỉ phép)',
+  'Học bù được tính là khấu trừ gói (deduct: true)',
   'Member gửi được yêu cầu gia hạn',
   'Admin backup flow chạy được',
 ];
@@ -302,15 +301,15 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
                   Tài liệu trực quan mô tả sitemap, luồng màn hình, phân quyền và demo flows cho ứng dụng quản lý học viên Pickleball.
                 </p>
                 <div className="flex items-center gap-3 mt-4 flex-wrap">
-                  {(['admin','coach','member'] as const).map(r => <RoleBadge key={r} role={r} />)}
+                  {(['admin', 'coach', 'member'] as const).map(r => <RoleBadge key={r} role={r} />)}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { val: '19',  label: 'Flows',    color: '#7FFFD4' },
+                  { val: '19', label: 'Flows', color: '#7FFFD4' },
                   { val: '45+', label: 'Màn hình', color: '#FFD4A8' },
-                  { val: '3',   label: 'Vai trò',  color: '#D4BBFF' },
-                  { val: '5',   label: 'Trạng thái điểm danh', color: '#FFB3A0' },
+                  { val: '3', label: 'Vai trò', color: '#D4BBFF' },
+                  { val: '5', label: 'Trạng thái điểm danh', color: '#FFB3A0' },
                 ].map((s, i) => (
                   <div key={i} className="text-center px-4 py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
                     <p style={{ fontSize: 24, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.val}</p>
@@ -480,9 +479,9 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
               {/* 3 branches */}
               <div className="flex flex-col gap-3">
                 {[
-                  { label: 'Dashboard Admin', Icon: Shield,   color: C.admin,  demo: 'admin / 123456'  },
-                  { label: 'Dashboard Coach', Icon: Dumbbell, color: C.coach,  demo: 'coach / 111111'  },
-                  { label: 'Member Dashboard', Icon: User,    color: C.member, demo: 'member / 222222' },
+                  { label: 'Dashboard Admin', Icon: Shield, color: C.admin, demo: 'admin / 123456' },
+                  { label: 'Dashboard Coach', Icon: Dumbbell, color: C.coach, demo: 'coach / 111111' },
+                  { label: 'Member Dashboard', Icon: User, color: C.member, demo: 'member / 222222' },
                 ].map(({ label, Icon, color, demo }) => (
                   <div key={label} className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: `${color}0E`, border: `1px solid ${color}30` }}>
                     <ArrowRight style={{ width: 14, height: 14, color, flexShrink: 0 }} />
@@ -507,9 +506,9 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
             <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))' }}>
               {/* Column split: admin, coach, member */}
               {[
-                { role: 'admin' as const, color: C.admin, items: SITEMAP.filter((_,i) => i <= 33) },
-                { role: 'coach' as const, color: C.coach, items: SITEMAP.filter((_,i) => i >= 34 && i <= 41) },
-                { role: 'member' as const, color: C.member, items: SITEMAP.filter((_,i) => i >= 42) },
+                { role: 'admin' as const, color: C.admin, items: SITEMAP.filter((_, i) => i <= 33) },
+                { role: 'coach' as const, color: C.coach, items: SITEMAP.filter((_, i) => i >= 34 && i <= 41) },
+                { role: 'member' as const, color: C.member, items: SITEMAP.filter((_, i) => i >= 42) },
               ].map(({ role, color, items }) => (
                 <div key={role}>
                   <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: `2px solid ${color}` }}>
@@ -637,11 +636,11 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
             §8  ATTENDANCE RULES
         ────────────────────────────────────────────── */}
         <section className="mb-14">
-          <SectionHeader num="8" title="Quy tắc điểm danh" sub="Nghiệp vụ quan trọng — 5 trạng thái và quy tắc trừ buổi" />
+          <SectionHeader num="8" title="Quy tắc điểm danh" sub="Nghiệp vụ quan trọng — 4 trạng thái và quy tắc khấu trừ gói" />
           <Card style={{ overflow: 'hidden' }}>
             {/* table header */}
             <div className="grid grid-cols-4 px-5 py-3" style={{ background: 'rgba(14,124,123,0.06)', borderBottom: `1px solid ${C.border}` }}>
-              {['Trạng thái', 'Mô tả', 'Trừ buổi', 'Ghi chú nghiệp vụ'].map((h, i) => (
+              {['Trạng thái', 'Mô tả', 'Khấu trừ gói', 'Ghi chú nghiệp vụ'].map((h, i) => (
                 <p key={i} style={{ fontSize: 11, fontWeight: 700, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</p>
               ))}
             </div>
@@ -665,7 +664,7 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
                     </span>
                   ) : (
                     <span className="flex items-center gap-1.5 px-3 py-1 rounded-full w-fit" style={{ background: 'rgba(42,157,143,0.10)', color: '#2A9D8F', fontSize: 12, fontWeight: 700 }}>
-                      <X style={{ width: 12, height: 12 }} /> Không trừ
+                      <X style={{ width: 12, height: 12 }} /> Không khấu trừ
                     </span>
                   )}
                 </div>
@@ -676,7 +675,7 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
           <div className="flex items-start gap-2 mt-3 px-1">
             <AlertCircle style={{ width: 14, height: 14, color: C.acc, marginTop: 2, flexShrink: 0 }} />
             <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.6 }}>
-              <strong style={{ color: C.text }}>Lưu ý quan trọng:</strong> "Học bù" phải được cấu hình <code style={{ background: 'rgba(0,0,0,0.06)', padding: '1px 5px', borderRadius: 4 }}>deduct: true</code> — Học viên bù buổi đã nghỉ vẫn sẽ bị trừ 1 buổi từ gói học hiện tại.
+              <strong style={{ color: C.text }}>Lưu ý quan trọng:</strong> "Học bù" phải được cấu hình <code style={{ background: 'rgba(0,0,0,0.06)', padding: '1px 5px', borderRadius: 4 }}>deduct: true</code> — Học viên bù buổi đã nghỉ vẫn sẽ bị khấu trừ 1 buổi từ gói học hiện tại.
             </p>
           </div>
         </section>
@@ -692,7 +691,7 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
               <div className="px-5 py-3" style={{ background: 'rgba(0,0,0,0.03)', borderBottom: `1px solid ${C.border}` }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Màn hình / Tính năng</p>
               </div>
-              {(['admin','coach','member'] as const).map(r => (
+              {(['admin', 'coach', 'member'] as const).map(r => (
                 <div key={r} className="flex justify-center items-center py-3" style={{ background: 'rgba(0,0,0,0.03)', borderBottom: `1px solid ${C.border}` }}>
                   <RoleBadge role={r} />
                 </div>
@@ -767,10 +766,10 @@ export function ScreenFlowDocument({ onBack }: ScreenFlowDocumentProps) {
                         className="px-2 py-1 rounded-md"
                         style={{
                           background: i === 0 ? color : `${color}12`,
-                          color:      i === 0 ? 'white' : color,
-                          fontSize:   11,
+                          color: i === 0 ? 'white' : color,
+                          fontSize: 11,
                           fontWeight: 600,
-                          border:     `1px solid ${color}25`,
+                          border: `1px solid ${color}25`,
                           whiteSpace: 'nowrap',
                         }}
                       >{s}</div>
