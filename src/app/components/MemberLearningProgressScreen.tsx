@@ -6,6 +6,7 @@ import {
 
 interface MemberLearningProgressScreenProps {
     onBack: () => void;
+    onNavigate?: (screen: string) => void;
 }
 
 interface LearningSession {
@@ -35,7 +36,7 @@ interface Course {
     totalSessions: number;
 }
 
-export const MemberLearningProgressScreen: React.FC<MemberLearningProgressScreenProps> = ({ onBack }) => {
+export const MemberLearningProgressScreen: React.FC<MemberLearningProgressScreenProps> = ({ onBack, onNavigate }) => {
     // List of courses for the member
     const courses: Course[] = [
         { id: 'course-1', name: 'Beginner A', schedule: 'Thứ 2 - Thứ 4 - Thứ 6 (18:00 - 19:30)', coach: 'Coach Nam', totalSessions: 14 },
@@ -378,13 +379,18 @@ export const MemberLearningProgressScreen: React.FC<MemberLearningProgressScreen
 
     const getAttendanceStyle = (status: string) => {
         switch (status) {
-            case 'Có mặt': return { bg: 'rgba(42,157,143,0.12)', color: '#2A9D8F' };
-            case 'Trễ': return { bg: 'rgba(244,162,97,0.12)', color: '#F4A261' };
-            case 'Học bù': return { bg: 'rgba(129,90,213,0.12)', color: '#815AD5' };
-            case 'Nghỉ phép': return { bg: 'rgba(14,124,123,0.12)', color: '#0E7C7B' };
-            case 'Vắng': return { bg: 'rgba(231,111,81,0.12)', color: '#E76F51' };
-            case 'Chưa diễn ra': return { bg: '#F3F4F6', color: '#9CA3AF' };
-            default: return { bg: '#E5E7EB', color: '#4B5563' };
+            case 'Có mặt':
+            case 'Trễ':
+                return { bg: 'rgba(42,157,143,0.12)', color: '#2A9D8F', label: 'Đã điểm danh' };
+            case 'Học bù':
+                return { bg: 'rgba(239,68,68,0.12)', color: '#EF4444', label: 'Học bù' };
+            case 'Nghỉ phép':
+            case 'Vắng':
+                return { bg: 'rgba(107,114,128,0.12)', color: '#6B7280', label: 'Nghỉ' };
+            case 'Chưa diễn ra':
+                return { bg: '#F3F4F6', color: '#9CA3AF', label: 'Chưa diễn ra' };
+            default:
+                return { bg: '#E5E7EB', color: '#4B5563', label: status };
         }
     };
 
@@ -567,11 +573,11 @@ export const MemberLearningProgressScreen: React.FC<MemberLearningProgressScreen
                                                             className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold"
                                                             style={{ background: attStyle.bg, color: attStyle.color }}
                                                         >
-                                                            {session.attendanceStatus}
+                                                            {attStyle.label}
                                                         </span>
                                                     </div>
                                                     <span style={{ fontSize: 11, color: '#9CA3AF' }} className="font-semibold block mt-0.5">
-                                                        {session.time} · {session.coach}
+                                                        {session.time} · {session.coach} {session.attendanceStatus === 'Học bù' && ' (HLV sắp xếp)'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -622,9 +628,18 @@ export const MemberLearningProgressScreen: React.FC<MemberLearningProgressScreen
                                                     </div>
                                                 ) : (session.attendanceStatus === 'Vắng' || session.attendanceStatus === 'Nghỉ phép') && !hasMedia ? (
                                                     /* CASE 0.5: Absent sessions with no media */
-                                                    <div className="p-4 mt-2 bg-white rounded-2xl border border-gray-100 text-center text-xs text-gray-400 font-semibold">
-                                                        <AlertCircle className="mx-auto text-gray-300 mb-1" size={20} />
-                                                        Bạn đã vắng mặt buổi học này. Vui lòng tham gia học bù hoặc đăng ký buổi học khác để cập nhật quá trình học tập.
+                                                    <div className="p-4 mt-2 bg-white rounded-2xl border border-gray-100 text-center text-xs text-gray-400 font-semibold flex flex-col items-center gap-3">
+                                                        <div className="flex flex-col items-center">
+                                                            <AlertCircle className="text-gray-300 mb-1" size={20} />
+                                                            <p style={{ color: '#6B7280' }}>Bạn đã nghỉ học buổi học này.</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => onNavigate?.('member-makeup-register')}
+                                                            className="px-4 py-2 bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl font-bold text-xs active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
+                                                        >
+                                                            <Calendar size={13} />
+                                                            Xin học bù
+                                                        </button>
                                                     </div>
                                                 ) : hasMedia ? (
                                                     /* CASE 1: Video / Image is already uploaded */

@@ -34,6 +34,9 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
     const [selectedMakeupSession, setSelectedMakeupSession] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
+    // Số buổi vắng học bù (vắng mặt khi đi học bù) - Dành cho mô phỏng UAT
+    const [makeupAbsencesCount, setMakeupAbsencesCount] = useState<number>(1);
+
     // Danh sách khóa học học viên đăng ký
     const courseList = [
         { name: 'Beginner A', coach: 'Coach Nam' },
@@ -158,7 +161,22 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
     // Danh sách các ngày học bù khả dụng (và hợp lệ sau ngày vắng) để hiện trên Calendar Selector
     const uniqueDates = Array.from(new Set(validMakeupSessions.map(s => s.date))).sort();
 
-    const canRegister = missedSessions.length > 0 && missedSessions.length < 2;
+    const isBlockedByPenalty = makeupAbsencesCount >= 2;
+    const canRegister = missedSessions.length > 0 && !isBlockedByPenalty;
+
+    // Lịch sử đăng ký học bù dựa theo số buổi vắng học bù giả lập
+    const getPastMakeupHistory = (count: number) => {
+        const base = [
+            { id: 'pm1', date: '05/05/2026', courseName: 'Beginner A', status: 'Đã học', coach: 'Coach Nam' }
+        ];
+        if (count >= 1) {
+            base.push({ id: 'pm2', date: '12/05/2026', courseName: 'Beginner A', status: 'Vắng học bù', coach: 'Coach Nam' });
+        }
+        if (count >= 2) {
+            base.push({ id: 'pm3', date: '19/05/2026', courseName: 'Beginner A', status: 'Vắng học bù', coach: 'Coach Nam' });
+        }
+        return base;
+    };
 
     const handleCourseChange = (courseName: string) => {
         setSelectedCourse(courseName);
@@ -205,6 +223,37 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
 
             <div className="flex-1 overflow-y-auto px-5 pb-10 space-y-6 mt-4">
 
+                {/* Bảng điều khiển mô phỏng (Demo/UAT) */}
+                <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-bold text-amber-900">Bảng mô phỏng UAT (Trạng thái học viên)</p>
+                            <p className="text-[10px] text-amber-700">Thay đổi số buổi vắng học bù để test quy định tự động khóa học bù</p>
+                        </div>
+                        <span className="text-[9px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-lg">Demo</span>
+                    </div>
+                    <div className="flex gap-2">
+                        {[0, 1, 2].map(num => (
+                            <button
+                                key={num}
+                                type="button"
+                                onClick={() => {
+                                    setMakeupAbsencesCount(num);
+                                    setSelectedMissedSession(null);
+                                    setSelectedMakeupSession(null);
+                                }}
+                                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                    makeupAbsencesCount === num
+                                        ? 'bg-amber-700 border-amber-700 text-white shadow-sm'
+                                        : 'bg-white border-amber-200 text-amber-800 hover:bg-amber-100/50 shadow-sm'
+                                }`}
+                            >
+                                {num} lần vắng {num >= 2 ? '❌ (Khóa)' : '✅ (Mở)'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Chọn Khóa Học */}
                 <section className="space-y-2">
                     <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider flex items-center gap-2">
@@ -236,10 +285,19 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
                     <div className="relative z-10">
                         <p className="text-[11px] font-bold opacity-80 uppercase tracking-wider mb-1">Khóa học: {selectedCourse}</p>
                         <p className="text-lg font-black mb-1">Giảng viên: {currentCoach}</p>
-                        <p className="text-sm font-bold opacity-90 mb-4">Số buổi vắng: {missedSessions.length} / 2</p>
+                        
+                        <div className="space-y-1 mb-4">
+                            <p className="text-xs font-bold opacity-90">Vắng chính khóa: <span className="font-extrabold">{missedSessions.length} buổi</span></p>
+                            <p className="text-xs font-bold opacity-90">Vắng khi học bù: <span className={makeupAbsencesCount >= 2 ? "font-extrabold text-red-300" : "font-extrabold text-yellow-300"}>{makeupAbsencesCount} / 2 buổi</span></p>
+                        </div>
 
                         <div className="flex items-center gap-2 bg-white/10 py-2 px-3 rounded-xl w-fit">
-                            {canRegister ? (
+                            {isBlockedByPenalty ? (
+                                <>
+                                    <AlertCircle size={16} className="text-red-300" />
+                                    <span className="text-sm font-bold italic text-red-300">Quyền học bù bị khóa (Vắng học bù ≥ 2)</span>
+                                </>
+                            ) : canRegister ? (
                                 <>
                                     <CheckCircle2 size={16} className="text-white" />
                                     <span className="text-sm font-bold italic">Có thể đăng ký bù lớp của {currentCoach}</span>
@@ -247,7 +305,7 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
                             ) : (
                                 <>
                                     <AlertCircle size={16} className="text-orange-300" />
-                                    <span className="text-sm font-bold italic text-orange-300">Không đủ điều kiện học bù</span>
+                                    <span className="text-sm font-bold italic text-orange-300">Chưa có buổi vắng cần bù</span>
                                 </>
                             )}
                         </div>
@@ -258,198 +316,214 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
                     </div>
                 </div>
 
-                {/* Warning if has missed sessions */}
-                {missedSessions.length > 0 && (
-                    <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3">
-                        <AlertCircle className="text-orange-500 shrink-0" size={20} />
-                        <div>
-                            <p className="text-sm font-bold text-orange-800">Yêu cầu chọn buổi vắng</p>
-                            <p className="text-xs text-orange-700 mt-0.5">Vui lòng chọn 1 buổi vắng bên dưới để đối chiếu trước khi đăng ký.</p>
-                        </div>
+                {/* Đăng ký học bù */}
+                {isBlockedByPenalty ? (
+                    <div className="bg-red-50 border border-red-100 p-5 rounded-3xl text-center space-y-2.5">
+                        <AlertCircle className="mx-auto text-red-500" size={32} />
+                        <p className="text-sm font-bold text-red-950">Quyền tự đăng ký học bù đã bị khóa</p>
+                        <p className="text-xs text-red-800 leading-relaxed font-medium">
+                            Hệ thống ghi nhận bạn đã vắng mặt không phép **{makeupAbsencesCount} buổi** khi tham gia học bù (vượt quá giới hạn tối đa 2 buổi).
+                        </p>
+                        <p className="text-xs text-red-600 font-bold pt-1">
+                            Vui lòng liên hệ bộ phận hỗ trợ khách hàng hoặc HLV để được hỗ trợ mở khóa.
+                        </p>
                     </div>
-                )}
-
-                {/* Chọn buổi vắng để bù */}
-                {missedSessions.length > 0 ? (
-                    <section className="space-y-3">
-                        <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider flex items-center gap-2">
-                            <Calendar size={14} className="text-[#0E7C7B]" />
-                            1. Chọn buổi vắng cần bù
-                        </h2>
-                        <div className="space-y-2">
-                            {missedSessions.map(session => (
-                                <button
-                                    key={session.id}
-                                    onClick={() => {
-                                        setSelectedMissedSession(session.id);
-                                        setSelectedMakeupSession(null);
-                                    }}
-                                    className={`w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all ${selectedMissedSession === session.id
-                                        ? 'border-[#0E7C7B] bg-[#E6F2F2]'
-                                        : 'border-white bg-white'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedMissedSession === session.id ? 'bg-[#0E7C7B] text-white' : 'bg-gray-100 text-gray-500'
-                                            }`}>
-                                            <Calendar size={20} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-bold text-[#1F2933]">Buổi học ngày {session.date}</p>
-                                            <p className="text-xs text-red-500 font-medium">Trạng thái: {session.status}</p>
-                                        </div>
-                                    </div>
-                                    {selectedMissedSession === session.id && <CheckCircle2 size={20} className="text-[#0E7C7B]" />}
-                                </button>
-                            ))}
-                        </div>
-                    </section>
                 ) : (
-                    <div className="bg-white p-5 rounded-2xl text-center shadow-sm">
-                        <CheckCircle2 className="mx-auto text-teal-500 mb-1.5" size={24} />
-                        <p className="text-sm font-bold text-gray-800">Tuyệt vời!</p>
-                        <p className="text-xs text-gray-500">Khóa học {selectedCourse} không có buổi vắng nào cần bù.</p>
-                    </div>
-                )}
-
-                {/* Chọn ngày học bù (Calendar Selector) */}
-                {missedSessions.length > 0 && uniqueDates.length > 0 && (
-                    <section className="space-y-3">
-                        <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider flex items-center gap-2">
-                            <Calendar size={14} className="text-[#0E7C7B]" />
-                            2. Chọn ngày đăng ký học bù (Lịch {currentCoach})
-                        </h2>
-
-                        <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-                            {uniqueDates.map(dateStr => {
-                                const isSelected = selectedDate === dateStr;
-                                const sessionOnDate = coachSessions.find(s => s.date === dateStr);
-                                const isFull = sessionOnDate?.isFull;
-
-                                return (
-                                    <button
-                                        key={dateStr}
-                                        onClick={() => {
-                                            setSelectedDate(dateStr);
-                                            setSelectedMakeupSession(null);
-                                        }}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl min-w-[70px] border-2 transition-all shrink-0 ${isSelected
-                                            ? 'border-[#0E7C7B] bg-[#0E7C7B] text-white'
-                                            : isFull
-                                                ? 'border-red-100 bg-red-50/50 text-red-400'
-                                                : 'border-white bg-white text-gray-700'
-                                            }`}
-                                    >
-                                        <span className={`text-[10px] font-bold ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
-                                            {sessionOnDate?.dayOfWeek}
-                                        </span>
-                                        <span className="text-lg font-black leading-none my-0.5">
-                                            {sessionOnDate?.dayLabel}
-                                        </span>
-                                        <span className={`text-[10px] font-bold ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
-                                            {sessionOnDate?.month}
-                                        </span>
-                                        <span className={`text-[9px] font-black uppercase tracking-tighter mt-1 ${isSelected ? 'text-white/90' : isFull ? 'text-red-400' : 'text-[#0E7C7B]'
-                                            }`}>
-                                            {isFull ? 'Hết chỗ' : `${sessionOnDate?.slots} chỗ`}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </section>
-                )}
-
-                {/* Danh sách buổi học bù trong ngày đã chọn */}
-                {missedSessions.length > 0 && (
-                    <section className="space-y-3">
-                        <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider">
-                            3. Lịch học bù khả dụng trong ngày
-                        </h2>
-
-                        <div className="space-y-3">
-                            {filteredSessions.length > 0 ? (
-                                filteredSessions.map(session => (
-                                    <button
-                                        key={session.id}
-                                        disabled={session.isFull || !selectedMissedSession}
-                                        onClick={() => setSelectedMakeupSession(session.id)}
-                                        className={`w-full bg-white rounded-3xl p-4 flex items-center gap-4 border-2 transition-all relative ${session.isFull
-                                            ? 'opacity-60 border-transparent grayscale'
-                                            : selectedMakeupSession === session.id
-                                                ? 'border-[#0E7C7B] bg-[#E6F2F2]'
-                                                : 'border-transparent active:border-[#0E7C7B]'
-                                            }`}
-                                        style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                                    >
-                                        {/* Date Badge */}
-                                        <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0 ${session.isFull ? 'bg-red-50' : 'bg-[#E6F2F2]'
-                                            }`}>
-                                            <span className={`text-[10px] font-bold ${session.isFull ? 'text-red-400' : 'text-[#0E7C7B]'}`}>{session.dayOfWeek}</span>
-                                            <span className={`text-2xl font-black leading-none my-0.5 ${session.isFull ? 'text-red-500' : 'text-[#0E7C7B]'}`}>{session.dayLabel}</span>
-                                            <span className={`text-[10px] font-bold ${session.isFull ? 'text-red-400' : 'text-[#0E7C7B]'}`}>{session.month}</span>
-                                        </div>
-
-                                        {/* Info */}
-                                        <div className="flex-1 text-left">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-black text-[#1F2933]">{session.courseName}</h3>
-                                                {session.isFull && (
-                                                    <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-500 text-[10px] font-bold">Đầy</span>
-                                                )}
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-y-1">
-                                                <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                                                    <Clock size={12} />
-                                                    <span>{session.time}</span>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                                                        <MapPin size={12} />
-                                                        <span className="font-bold text-[#1F2933]">{session.location} còn trống</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                                                        <User size={12} />
-                                                        <span className="font-bold text-[#0E7C7B]">{session.coach}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Slots */}
-                                        <div className="text-center pr-2">
-                                            <p className={`text-xl font-black ${session.isFull ? 'text-gray-300' : 'text-[#0E7C7B]'}`}>
-                                                {session.slots}
-                                            </p>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">chỗ trống</p>
-                                        </div>
-
-                                        {selectedMakeupSession === session.id ? (
-                                            <CheckCircle2 size={20} className="text-[#0E7C7B]" />
-                                        ) : (
-                                            <ChevronRight size={18} className="text-gray-300 ml-auto" />
-                                        )}
-
-                                        {/* Overlay if no missed session selected */}
-                                        {!selectedMissedSession && !session.isFull && (
-                                            <div className="absolute inset-0 bg-white/40 flex items-center justify-center rounded-3xl backdrop-blur-[1px]">
-                                                <p className="text-[10px] font-bold text-[#0E7C7B] bg-white px-3 py-1 rounded-full border border-[#0E7C7B]/20 shadow-sm">
-                                                    Chọn buổi vắng trước
-                                                </p>
-                                            </div>
-                                        )}
-                                    </button>
-                                ))
-                            ) : (
-                                <div className="bg-white p-8 rounded-3xl text-center border border-dashed border-gray-200">
-                                    <AlertCircle className="mx-auto text-gray-300 mb-2" size={32} />
-                                    <p className="text-sm font-bold text-[#1F2933]">Không có lịch dạy bù nào</p>
-                                    <p className="text-xs text-[#6B7280] mt-1">{currentCoach} không có lịch dạy bù nào vào ngày này.</p>
+                    <>
+                        {/* Warning if has missed sessions */}
+                        {missedSessions.length > 0 && (
+                            <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3">
+                                <AlertCircle className="text-orange-500 shrink-0" size={20} />
+                                <div>
+                                    <p className="text-sm font-bold text-orange-800">Yêu cầu chọn buổi vắng</p>
+                                    <p className="text-xs text-orange-700 mt-0.5">Vui lòng chọn 1 buổi vắng bên dưới để đối chiếu trước khi đăng ký.</p>
                                 </div>
-                            )}
-                        </div>
-                    </section>
+                            </div>
+                        )}
+
+                        {/* Chọn buổi vắng để bù */}
+                        {missedSessions.length > 0 ? (
+                            <section className="space-y-3">
+                                <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider flex items-center gap-2">
+                                    <Calendar size={14} className="text-[#0E7C7B]" />
+                                    1. Chọn buổi vắng cần bù
+                                </h2>
+                                <div className="space-y-2">
+                                    {missedSessions.map(session => (
+                                        <button
+                                            key={session.id}
+                                            onClick={() => {
+                                                setSelectedMissedSession(session.id);
+                                                setSelectedMakeupSession(null);
+                                            }}
+                                            className={`w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all ${selectedMissedSession === session.id
+                                                ? 'border-[#0E7C7B] bg-[#E6F2F2]'
+                                                : 'border-white bg-white'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedMissedSession === session.id ? 'bg-[#0E7C7B] text-white' : 'bg-gray-100 text-gray-500'
+                                                    }`}>
+                                                    <Calendar size={20} />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="text-sm font-bold text-[#1F2933]">Buổi học ngày {session.date}</p>
+                                                    <p className="text-xs text-red-500 font-medium">Trạng thái: {session.status}</p>
+                                                </div>
+                                            </div>
+                                            {selectedMissedSession === session.id && <CheckCircle2 size={20} className="text-[#0E7C7B]" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        ) : (
+                            <div className="bg-white p-5 rounded-2xl text-center shadow-sm">
+                                <CheckCircle2 className="mx-auto text-teal-500 mb-1.5" size={24} />
+                                <p className="text-sm font-bold text-gray-800">Tuyệt vời!</p>
+                                <p className="text-xs text-gray-500">Khóa học {selectedCourse} không có buổi vắng nào cần bù.</p>
+                            </div>
+                        )}
+
+                        {/* Chọn ngày học bù (Calendar Selector) */}
+                        {missedSessions.length > 0 && uniqueDates.length > 0 && (
+                            <section className="space-y-3">
+                                <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider flex items-center gap-2">
+                                    <Calendar size={14} className="text-[#0E7C7B]" />
+                                    2. Chọn ngày đăng ký học bù (Lịch {currentCoach})
+                                </h2>
+
+                                <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                                    {uniqueDates.map(dateStr => {
+                                        const isSelected = selectedDate === dateStr;
+                                        const sessionOnDate = coachSessions.find(s => s.date === dateStr);
+                                        const isFull = sessionOnDate?.isFull;
+
+                                        return (
+                                            <button
+                                                key={dateStr}
+                                                onClick={() => {
+                                                    setSelectedDate(dateStr);
+                                                    setSelectedMakeupSession(null);
+                                                }}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-2xl min-w-[70px] border-2 transition-all shrink-0 ${isSelected
+                                                    ? 'border-[#0E7C7B] bg-[#0E7C7B] text-white'
+                                                    : isFull
+                                                        ? 'border-red-100 bg-red-50/50 text-red-400'
+                                                        : 'border-white bg-white text-gray-700'
+                                                    }`}
+                                            >
+                                                <span className={`text-[10px] font-bold ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
+                                                    {sessionOnDate?.dayOfWeek}
+                                                </span>
+                                                <span className="text-lg font-black leading-none my-0.5">
+                                                    {sessionOnDate?.dayLabel}
+                                                </span>
+                                                <span className={`text-[10px] font-bold ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
+                                                    {sessionOnDate?.month}
+                                                </span>
+                                                <span className={`text-[9px] font-black uppercase tracking-tighter mt-1 ${isSelected ? 'text-white/90' : isFull ? 'text-red-400' : 'text-[#0E7C7B]'
+                                                    }`}>
+                                                    {isFull ? 'Hết chỗ' : `${sessionOnDate?.slots} chỗ`}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Danh sách buổi học bù trong ngày đã chọn */}
+                        {missedSessions.length > 0 && (
+                            <section className="space-y-3">
+                                <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider">
+                                    3. Lịch học bù khả dụng trong ngày
+                                </h2>
+
+                                <div className="space-y-3">
+                                    {filteredSessions.length > 0 ? (
+                                        filteredSessions.map(session => (
+                                            <button
+                                                key={session.id}
+                                                disabled={session.isFull || !selectedMissedSession}
+                                                onClick={() => setSelectedMakeupSession(session.id)}
+                                                className={`w-full bg-white rounded-3xl p-4 flex items-center gap-4 border-2 transition-all relative ${session.isFull
+                                                    ? 'opacity-60 border-transparent grayscale'
+                                                    : selectedMakeupSession === session.id
+                                                        ? 'border-[#0E7C7B] bg-[#E6F2F2]'
+                                                        : 'border-transparent active:border-[#0E7C7B]'
+                                                    }`}
+                                                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
+                                            >
+                                                {/* Date Badge */}
+                                                <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0 ${session.isFull ? 'bg-red-50' : 'bg-[#E6F2F2]'
+                                                    }`}>
+                                                    <span className={`text-[10px] font-bold ${session.isFull ? 'text-red-400' : 'text-[#0E7C7B]'}`}>{session.dayOfWeek}</span>
+                                                    <span className={`text-2xl font-black leading-none my-0.5 ${session.isFull ? 'text-red-500' : 'text-[#0E7C7B]'}`}>{session.dayLabel}</span>
+                                                    <span className={`text-[10px] font-bold ${session.isFull ? 'text-red-400' : 'text-[#0E7C7B]'}`}>{session.month}</span>
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="flex-1 text-left">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h3 className="font-black text-[#1F2933]">{session.courseName}</h3>
+                                                        {session.isFull && (
+                                                            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-500 text-[10px] font-bold">Đầy</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-y-1">
+                                                        <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                                                            <Clock size={12} />
+                                                            <span>{session.time}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                                                                <MapPin size={12} />
+                                                                <span className="font-bold text-[#1F2933]">{session.location} còn trống</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                                                                <User size={12} />
+                                                                <span className="font-bold text-[#0E7C7B]">{session.coach}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Slots */}
+                                                <div className="text-center pr-2">
+                                                    <p className={`text-xl font-black ${session.isFull ? 'text-gray-300' : 'text-[#0E7C7B]'}`}>
+                                                        {session.slots}
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">chỗ trống</p>
+                                                </div>
+
+                                                {selectedMakeupSession === session.id ? (
+                                                    <CheckCircle2 size={20} className="text-[#0E7C7B]" />
+                                                ) : (
+                                                    <ChevronRight size={18} className="text-gray-300 ml-auto" />
+                                                )}
+
+                                                {/* Overlay if no missed session selected */}
+                                                {!selectedMissedSession && !session.isFull && (
+                                                    <div className="absolute inset-0 bg-white/40 flex items-center justify-center rounded-3xl backdrop-blur-[1px]">
+                                                        <p className="text-[10px] font-bold text-[#0E7C7B] bg-white px-3 py-1 rounded-full border border-[#0E7C7B]/20 shadow-sm">
+                                                            Chọn buổi vắng trước
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="bg-white p-8 rounded-3xl text-center border border-dashed border-gray-200">
+                                            <AlertCircle className="mx-auto text-gray-300 mb-2" size={32} />
+                                            <p className="text-sm font-bold text-[#1F2933]">Không có lịch dạy bù nào</p>
+                                            <p className="text-xs text-[#6B7280] mt-1">{currentCoach} không có lịch dạy bù nào vào ngày này.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
+                    </>
                 )}
 
                 {/* Quy định */}
@@ -482,6 +556,30 @@ export const MemberMakeupRegisterScreen: React.FC<MemberMakeupRegisterScreenProp
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* Lịch sử đăng ký học bù */}
+                <section className="space-y-3">
+                    <h2 className="text-[13px] font-black text-[#1F2933] uppercase tracking-wider">
+                        Lịch sử học bù đã đăng ký
+                    </h2>
+                    <div className="space-y-2">
+                        {getPastMakeupHistory(makeupAbsencesCount).map(hist => (
+                            <div key={hist.id} className="bg-white p-4 rounded-3xl flex items-center justify-between border border-gray-100 shadow-sm">
+                                <div>
+                                    <p className="text-xs font-bold text-gray-800">Buổi bù ngày {hist.date}</p>
+                                    <p className="text-[10px] text-gray-400">HLV: {hist.coach} · {hist.courseName}</p>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${
+                                    hist.status === 'Đã học'
+                                        ? 'bg-teal-50 text-teal-700'
+                                        : 'bg-red-50 text-red-600'
+                                }`}>
+                                    {hist.status}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </section>
 

@@ -39,23 +39,23 @@ const STATUS_CFG: Record<Status, {
   Icon: React.FC<{ style?: React.CSSProperties }>;
 }> = {
   present: {
-    label: 'Có mặt', sublabel: 'Tham gia đầy đủ',
+    label: 'Đã điểm danh', sublabel: 'Tham gia đầy đủ',
     color: '#2A9D8F', bg: 'rgba(42,157,143,0.12)', border: 'rgba(42,157,143,0.28)', trackColor: '#2A9D8F',
     Icon: CheckCircle2,
   },
   absent: {
-    label: 'Vắng mặt', sublabel: 'Không tham gia',
-    color: '#E76F51', bg: 'rgba(231,111,81,0.12)', border: 'rgba(231,111,81,0.28)', trackColor: '#E76F51',
+    label: 'Nghỉ', sublabel: 'Nghỉ học (HLV xếp bù)',
+    color: '#6B7280', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.28)', trackColor: '#6B7280',
     Icon: XCircle,
   },
   leave: {
-    label: 'Nghỉ phép', sublabel: 'Có phép trước',
-    color: '#E9C46A', bg: 'rgba(233,196,106,0.18)', border: 'rgba(233,196,106,0.38)', trackColor: '#E9C46A',
+    label: 'Nghỉ', sublabel: 'Nghỉ học (HLV xếp bù)',
+    color: '#6B7280', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.28)', trackColor: '#6B7280',
     Icon: MinusCircle,
   },
   makeup: {
-    label: 'Học bù', sublabel: 'Buổi học bù',
-    color: '#815AD5', bg: 'rgba(129,90,213,0.12)', border: 'rgba(129,90,213,0.28)', trackColor: '#815AD5',
+    label: 'Học bù', sublabel: 'Học bù (HLV sắp xếp)',
+    color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)', trackColor: '#EF4444',
     Icon: BookOpen,
   },
 };
@@ -187,7 +187,7 @@ function SummaryPill({
 }
 
 /** Timeline session card */
-function SessionCard({ session, isLast }: { session: Session; isLast: boolean }) {
+function SessionCard({ session, isLast, onNavigate }: { session: Session; isLast: boolean; onNavigate?: (screen: string) => void }) {
   const cfg = STATUS_CFG[session.status];
 
   return (
@@ -306,6 +306,18 @@ function SessionCard({ session, isLast }: { session: Session; isLast: boolean })
               </div>
             </div>
           )}
+
+          {(session.status === 'absent' || session.status === 'leave') && (
+            <div className="mt-3 flex justify-end">
+              <button
+                onClick={() => onNavigate?.('member-makeup-register')}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#0E7C7B] hover:bg-[#0A5F5E] active:scale-95 transition-transform flex items-center gap-1.5 shadow-sm"
+              >
+                <BookOpen style={{ width: 12, height: 12 }} />
+                Xin học bù
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -315,7 +327,7 @@ function SessionCard({ session, isLast }: { session: Session; isLast: boolean })
 /* ══════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════ */
-export function MemberAttendanceHistoryScreen() {
+export function MemberAttendanceHistoryScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
   const [monthIdx, setMonthIdx] = useState(1);   // Tháng 04 default
 
   const monthNum = MONTH_KEY_MAP[MONTHS[monthIdx].key];
@@ -328,20 +340,21 @@ export function MemberAttendanceHistoryScreen() {
     : 0;
 
   /* Active filter tabs */
-  type FilterKey = 'all' | Status;
+  type FilterKey = 'all' | 'present' | 'nghi' | 'makeup';
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
   const FILTERS: { key: FilterKey; label: string }[] = [
     { key: 'all', label: 'Tất cả' },
-    { key: 'present', label: 'Có mặt' },
-    { key: 'leave', label: 'Nghỉ phép' },
-    { key: 'absent', label: 'Vắng' },
+    { key: 'present', label: 'Đã điểm danh' },
+    { key: 'nghi', label: 'Nghỉ' },
     { key: 'makeup', label: 'Học bù' },
   ];
 
   const filtered = activeFilter === 'all'
     ? sessions
-    : sessions.filter(s => s.status === activeFilter);
+    : activeFilter === 'nghi'
+      ? sessions.filter(s => s.status === 'absent' || s.status === 'leave')
+      : sessions.filter(s => s.status === activeFilter);
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#F0F4F5' }}>
@@ -448,10 +461,14 @@ export function MemberAttendanceHistoryScreen() {
             {/* Stats grid */}
             <div className="grid grid-cols-3 gap-0">
               {[
-                { ...STATUS_CFG.present, label: 'Có mặt', value: summary.present },
+                { ...STATUS_CFG.present, label: 'Đã điểm danh', value: summary.present },
+                { ...STATUS_CFG.leave, label: 'Nghỉ', value: summary.leave + summary.absent },
                 { ...STATUS_CFG.makeup, label: 'Học bù', value: summary.makeup },
-                { ...STATUS_CFG.leave, label: 'Nghỉ phép', value: summary.leave },
-                { ...STATUS_CFG.absent, label: 'Vắng mặt', value: summary.absent },
+                {
+                  label: 'Tổng số buổi', value: summary.total,
+                  color: '#4B5563', bg: 'rgba(75,85,99,0.09)', border: '', trackColor: '',
+                  Icon: Calendar, sublabel: '',
+                },
                 {
                   label: 'Vi phạm bù', value: summary.absent,
                   color: '#EF4444', bg: 'rgba(239,68,68,0.09)', border: '', trackColor: '',
@@ -500,7 +517,11 @@ export function MemberAttendanceHistoryScreen() {
             </div>
             {FILTERS.map(f => {
               const isActive = activeFilter === f.key;
-              const cfg = f.key !== 'all' ? STATUS_CFG[f.key as Status] : null;
+              const cfg = f.key !== 'all' ? (f.key === 'nghi' ? STATUS_CFG.leave : STATUS_CFG[f.key as Status]) : null;
+              const filterCount = f.key === 'all' ? 0
+                : f.key === 'nghi' ? sessions.filter(s => s.status === 'absent' || s.status === 'leave').length
+                : sessions.filter(s => s.status === f.key).length;
+
               return (
                 <button
                   key={f.key}
@@ -520,9 +541,7 @@ export function MemberAttendanceHistoryScreen() {
                     color: isActive ? (cfg ? cfg.color : '#0E7C7B') : '#6B7280',
                   }}>
                     {f.label}
-                    {f.key !== 'all' && cfg && sessions.filter(s => s.status === f.key).length > 0 && (
-                      <> ({sessions.filter(s => s.status === f.key).length})</>
-                    )}
+                    {f.key !== 'all' && filterCount > 0 && ` (${filterCount})`}
                   </span>
                 </button>
               );
@@ -535,7 +554,7 @@ export function MemberAttendanceHistoryScreen() {
           {/* Count label */}
           <div className="flex items-center justify-between mb-3">
             <p style={{ fontSize: 12, fontWeight: 900, color: '#374151', letterSpacing: '0.04em' }}>
-              {activeFilter === 'all' ? 'TOÀN BỘ' : STATUS_CFG[activeFilter as Status]?.label.toUpperCase()}
+              {activeFilter === 'all' ? 'TOÀN BỘ' : activeFilter === 'nghi' ? 'NGHỈ' : STATUS_CFG[activeFilter as Status]?.label.toUpperCase()}
             </p>
             <span
               className="px-2.5 py-1 rounded-xl"
@@ -566,6 +585,7 @@ export function MemberAttendanceHistoryScreen() {
                   key={session.id}
                   session={session}
                   isLast={idx === filtered.length - 1}
+                  onNavigate={onNavigate}
                 />
               ))}
             </div>

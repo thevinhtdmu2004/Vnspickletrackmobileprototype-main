@@ -772,7 +772,7 @@ export default function App() {
         );
 
       case 'member-schedule':
-        return <MemberScheduleScreen />;
+        return <MemberScheduleScreen onNavigate={(s) => navigate(s as Screen)} />;
 
       case 'member-package':
         return (
@@ -782,7 +782,7 @@ export default function App() {
         );
 
       case 'member-attendance-history':
-        return <MemberAttendanceHistoryScreen />;
+        return <MemberAttendanceHistoryScreen onNavigate={(s) => navigate(s as Screen)} />;
 
       case 'member-payment-history':
         return <MemberPaymentHistoryScreen />;
@@ -828,6 +828,7 @@ export default function App() {
         return (
           <MemberLearningProgressScreen
             onBack={goBack}
+            onNavigate={(s) => navigate(s as Screen)}
           />
         );
 

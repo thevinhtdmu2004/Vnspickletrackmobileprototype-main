@@ -13,7 +13,7 @@ import {
 /* ══════════════════════════════════════════════════════
    DATA TYPES
 ══════════════════════════════════════════════════════ */
-type SessionStatus = 'upcoming' | 'next' | 'present' | 'leave' | 'late' | 'absent';
+type SessionStatus = 'upcoming' | 'next' | 'present' | 'leave' | 'late' | 'absent' | 'makeup';
 
 interface Session {
   id:        number;
@@ -138,10 +138,11 @@ const STATUS_CFG: Record<SessionStatus, {
 }> = {
   next:     { label:'Sắp tới',   color:'#0E7C7B', bg:'rgba(14,124,123,0.12)',  border:'rgba(14,124,123,0.28)',  Icon: Zap           },
   upcoming: { label:'Sắp tới',   color:'#6B7280', bg:'rgba(107,114,128,0.09)', border:'rgba(107,114,128,0.22)', Icon: Calendar      },
-  present:  { label:'Có mặt',   color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
-  leave:    { label:'Nghỉ phép', color:'#E9C46A', bg:'rgba(233,196,106,0.18)', border:'rgba(233,196,106,0.38)', Icon: PauseCircle   },
-  late:     { label:'Đi trễ',   color:'#F4A261', bg:'rgba(244,162,97,0.14)',  border:'rgba(244,162,97,0.30)',  Icon: MinusCircle   },
-  absent:   { label:'Vắng mặt', color:'#E76F51', bg:'rgba(231,111,81,0.12)',  border:'rgba(231,111,81,0.28)',  Icon: BookOpen      },
+  present:  { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
+  leave:    { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)', border:'rgba(107,114,128,0.28)', Icon: MinusCircle   },
+  late:     { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
+  absent:   { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)', border:'rgba(107,114,128,0.28)', Icon: MinusCircle   },
+  makeup:   { label:'Học bù', color:'#EF4444', bg:'rgba(239,68,68,0.12)', border:'rgba(239,68,68,0.28)', Icon: BookOpen },
 };
 
 /* ══════════════════════════════════════════════════════
@@ -215,10 +216,10 @@ function WeekDayCell({ day }: { day: WeekDay }) {
 }
 
 /** Session card */
-function SessionCard({ session }: { session: Session }) {
+function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (screen: string) => void }) {
   const cfg    = STATUS_CFG[session.status];
   const isNext = session.status === 'next';
-  const isPast = ['present','leave','late','absent'].includes(session.status);
+  const isPast = ['present','leave','late','absent','makeup'].includes(session.status);
 
   return (
     <div
@@ -332,10 +333,22 @@ function SessionCard({ session }: { session: Session }) {
             <div className="flex items-center gap-1.5">
               <User style={{ width:11, height:11, color:'#C4C9D4' }} />
               <span style={{ fontSize:11, color: isPast ? '#C4C9D4' : '#9CA3AF', fontWeight:600 }}>
-                {session.coach}
+                {session.coach} {session.status === 'makeup' && ' (HLV sắp xếp)'}
               </span>
             </div>
           </div>
+
+          {(session.status === 'leave' || session.status === 'absent') && (
+            <div className="mt-2.5 flex justify-end">
+              <button
+                onClick={() => onNavigate?.('member-makeup-register')}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#0E7C7B] hover:bg-[#0A5F5E] active:scale-95 transition-transform flex items-center gap-1 shadow-sm"
+              >
+                <BookOpen style={{ width: 12, height: 12 }} />
+                Xin học bù
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -351,11 +364,11 @@ const MONTHS = [
   { label: 'Tháng 05/2026', key: 'may' },
 ];
 
-export function MemberScheduleScreen() {
+export function MemberScheduleScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
   const [monthIdx, setMonthIdx] = useState(1);   // default = Tháng 04/2026
 
   const upcoming  = ALL_SESSIONS.filter(s => ['next','upcoming'].includes(s.status));
-  const past      = ALL_SESSIONS.filter(s => ['present','leave','late','absent'].includes(s.status));
+  const past      = ALL_SESSIONS.filter(s => ['present','leave','late','absent','makeup'].includes(s.status));
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#F0F4F5' }}>
@@ -477,7 +490,7 @@ export function MemberScheduleScreen() {
           </div>
 
           <div className="space-y-3">
-            {upcoming.map(s => <SessionCard key={s.id} session={s} />)}
+            {upcoming.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
           </div>
         </div>
 
@@ -512,9 +525,9 @@ export function MemberScheduleScreen() {
           {/* Past legend */}
           <div className="flex items-center flex-wrap gap-3 mb-3 px-1">
             {[
-              { label:'Có mặt',   color:'#2A9D8F', bg:'rgba(42,157,143,0.12)'  },
-              { label:'Nghỉ phép', color:'#E9C46A', bg:'rgba(233,196,106,0.20)' },
-              { label:'Đi trễ',   color:'#F4A261', bg:'rgba(244,162,97,0.15)'  },
+              { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)'  },
+              { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)' },
+              { label:'Học bù', color:'#EF4444', bg:'rgba(239,68,68,0.12)' },
             ].map((leg, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: leg.color }} />
@@ -524,7 +537,7 @@ export function MemberScheduleScreen() {
           </div>
 
           <div className="space-y-3">
-            {past.map(s => <SessionCard key={s.id} session={s} />)}
+            {past.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
           </div>
         </div>
 

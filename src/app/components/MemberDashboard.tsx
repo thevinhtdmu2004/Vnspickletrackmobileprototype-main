@@ -37,8 +37,7 @@ const NEXT_CLASS = {
 const MONTHLY_STATS = [
   { label: 'Đã học tháng này', value: 5, unit: 'buổi', icon: BookOpen, color: '#0E7C7B', bg: 'rgba(14,124,123,0.09)' },
   { label: 'Tỷ lệ tham gia', value: '90', unit: '%', icon: Percent, color: '#2A9D8F', bg: 'rgba(42,157,143,0.09)' },
-  { label: 'Buổi nghỉ phép', value: 1, unit: 'buổi', icon: PauseCircle, color: '#E9C46A', bg: 'rgba(233,196,106,0.14)' },
-  { label: 'Buổi vắng', value: 0, unit: 'buổi', icon: XCircle, color: '#9CA3AF', bg: 'rgba(156,163,175,0.10)' },
+  { label: 'Buổi nghỉ', value: 1, unit: 'buổi', icon: XCircle, color: '#6B7280', bg: 'rgba(107,114,128,0.10)' },
 ];
 
 /* Status config */
