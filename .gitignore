@@ -1,0 +1,62 @@
+# VNS PickleTrack - Standardized GitIgnore Policy
+
+# 1. Dependency Directories
+node_modules/
+jspm_packages/
+web_projects/
+
+# 2. Build Outputs
+dist/
+build/
+out/
+bin/
+obj/
+publish/
+
+# 3. IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+*.swp
+*~
+
+# 4. Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+*.pem
+*.key
+
+# 5. Database & Docker Volume Data (Strict Enforcement)
+postgres-data/
+pgadmin-data/
+postgres-data/*
+pgadmin-data/*
+
+# 6. Test and Coverage
+coverage/
+TestResults/
+*.clog
+
+# 7. Package Manager Cache
+.nuget/
+.pnpm-store/
+.yarn/
+.npm/
+package-lock.json.bak
+pnpm-lock.yaml.bak
+yarn.lock.bak
+*.cache
+
+# 8. System and Logs
+logs/
+*.log
+Thumbs.db
+Desktop.ini
