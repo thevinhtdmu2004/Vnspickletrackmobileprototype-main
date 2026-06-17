@@ -1,11 +1,11 @@
-import { Home, Calendar, Archive, History, User } from 'lucide-react';
+import { Home, Calendar, Archive, ShoppingBag, User } from 'lucide-react';
 
 const TABS = [
-  { id: 'member-dashboard',           icon: Home,     label: 'Trang chủ' },
-  { id: 'member-schedule',            icon: Calendar, label: 'Lịch học'  },
-  { id: 'member-package',             icon: Archive,  label: 'Gói học'   },
-  { id: 'member-attendance-history',  icon: History,  label: 'Lịch sử'   },
-  { id: 'member-profile',             icon: User,     label: 'Cá nhân'   },
+  { id: 'member-dashboard',           icon: Home,         label: 'Trang chủ' },
+  { id: 'member-schedule',            icon: Calendar,     label: 'Lịch học'  },
+  { id: 'member-package',             icon: Archive,      label: 'Gói học'   },
+  { id: 'member-cart',                icon: ShoppingBag,  label: 'Cửa hàng'  },
+  { id: 'member-profile',             icon: User,         label: 'Cá nhân'   },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -13,9 +13,16 @@ type TabId = (typeof TABS)[number]['id'];
 interface MemberBottomNavigationProps {
   currentTab: string;
   onTabChange: (id: TabId) => void;
+  hasUnreadNotifications?: boolean;
+  hasActivePackage?: boolean;
 }
 
-export function MemberBottomNavigation({ currentTab, onTabChange }: MemberBottomNavigationProps) {
+export function MemberBottomNavigation({
+  currentTab,
+  onTabChange,
+  hasUnreadNotifications = false,
+  hasActivePackage = true
+}: MemberBottomNavigationProps) {
   return (
     <div
       className="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto z-30"
@@ -28,7 +35,7 @@ export function MemberBottomNavigation({ currentTab, onTabChange }: MemberBottom
       }}
     >
       <div className="flex">
-        {TABS.map(tab => {
+        {TABS.filter(tab => tab.id !== 'member-schedule' || hasActivePackage).map(tab => {
           const active = currentTab === tab.id;
           const Icon   = tab.icon;
           return (
@@ -38,7 +45,7 @@ export function MemberBottomNavigation({ currentTab, onTabChange }: MemberBottom
               className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 transition-all active:scale-95"
             >
               <div
-                className="w-8 h-8 flex items-center justify-center rounded-xl transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-xl transition-all relative"
                 style={{
                   background: active ? 'rgba(14,124,123,0.12)' : 'transparent',
                 }}
@@ -51,6 +58,20 @@ export function MemberBottomNavigation({ currentTab, onTabChange }: MemberBottom
                     strokeWidth: active ? 2.2 : 1.7,
                   }}
                 />
+                {/* Red dot for notifications on Home tab */}
+                {tab.id === 'member-dashboard' && hasUnreadNotifications && (
+                  <span
+                    className="absolute rounded-full"
+                    style={{
+                      top: 4,
+                      right: 4,
+                      width: 8,
+                      height: 8,
+                      background: '#EF4444',
+                      border: '1.5px solid white',
+                    }}
+                  />
+                )}
               </div>
               <span
                 style={{
@@ -69,3 +90,4 @@ export function MemberBottomNavigation({ currentTab, onTabChange }: MemberBottom
     </div>
   );
 }
+

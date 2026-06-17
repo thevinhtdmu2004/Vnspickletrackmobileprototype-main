@@ -371,14 +371,43 @@ function Toast({ message, sub }: { message:string; sub:string }) {
 interface MemberProfileScreenProps {
   onNavigate?: (screen: string) => void;
   onLogout?:   () => void;
+  purchaseHistory?: any[];
+  hasActivePackage?: boolean;
 }
 
-export function MemberProfileScreen({ onNavigate, onLogout }: MemberProfileScreenProps) {
+export function MemberProfileScreen({
+  onNavigate,
+  onLogout,
+  purchaseHistory = [],
+  hasActivePackage = true
+}: MemberProfileScreenProps) {
   const [sheet,   setSheet]   = useState<'none'|'update'|'pin'|'logout'>('none');
   const [toast,   setToast]   = useState<{ message:string; sub:string } | null>(null);
 
   const statusCfg = STATUS_CFG[MEMBER.status];
   const progress  = MEMBER.remaining / MEMBER.total;
+
+  // Chuẩn bị dữ liệu lịch sử hoạt động tổng hợp (timeline)
+  const defaultActivities = [
+    { type: 'makeup', title: 'Đăng ký học bù - Ca tối', date: '15/05/2026', badge: 'Đã duyệt', color: '#815AD5', bg: 'rgba(129,90,213,0.1)' },
+    { type: 'attendance', title: 'Điểm danh có mặt - Lớp Beginner A', date: '27/04/2026', badge: 'Có mặt', color: '#2A9D8F', bg: 'rgba(42,157,143,0.1)' },
+    { type: 'attendance', title: 'Nghỉ học có phép - Lớp Beginner A', date: '25/04/2026', badge: 'Có phép', color: '#E9C46A', bg: 'rgba(233,196,106,0.1)' },
+    { type: 'package', title: 'Kích hoạt gói tập mới: Gói 12 buổi', date: '01/04/2026', badge: 'Hoạt động', color: '#0E7C7B', bg: 'rgba(14,124,123,0.1)' },
+  ];
+
+  const purchaseActivities = purchaseHistory.map((p: any) => ({
+    type: 'purchase',
+    title: `Mua quầy: ${p.items}`,
+    date: p.date,
+    badge: p.status,
+    color: '#3B82F6',
+    bg: 'rgba(59,130,246,0.1)'
+  }));
+
+  let allActivities = [...purchaseActivities, ...defaultActivities];
+  if (!hasActivePackage) {
+    allActivities = allActivities.filter(act => act.type !== 'attendance' && act.type !== 'makeup');
+  }
 
   function showToast(message: string, sub: string) {
     setToast({ message, sub });
@@ -585,6 +614,65 @@ export function MemberProfileScreen({ onNavigate, onLogout }: MemberProfileScree
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* ─────────────────────────────────────────
+              LỊCH SỬ HOẠT ĐỘNG TỔNG HỢP
+          ───────────────────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div
+                className="flex items-center justify-center rounded-xl"
+                style={{ width: 28, height: 28, background: 'rgba(14,124,123,0.10)' }}
+              >
+                <Calendar style={{ width: 13, height: 13, color: '#0E7C7B' }} />
+              </div>
+              <p style={{ fontSize: 12, fontWeight: 900, color: '#1F2933', letterSpacing: '0.04em' }}>
+                LỊCH SỬ HOẠT ĐỘNG TỔNG HỢP
+              </p>
+            </div>
+
+            <div
+              className="bg-white rounded-3xl p-5 border border-gray-150 shadow-sm relative overflow-hidden"
+              style={{ border: '1.5px solid rgba(0,0,0,0.07)' }}
+            >
+              {allActivities.length === 0 ? (
+                <p className="text-center text-xs text-gray-400 py-4 font-semibold">Chưa có lịch sử hoạt động.</p>
+              ) : (
+                <div className="relative pl-5 border-l-2 border-gray-100 space-y-6">
+                  {allActivities.map((act, i) => (
+                    <div key={i} className="relative">
+                      {/* Timeline dot */}
+                      <span
+                        className="absolute rounded-full"
+                        style={{
+                          left: -26,
+                          top: 4,
+                          width: 10,
+                          height: 10,
+                          background: act.color,
+                          border: '2px solid white',
+                          boxShadow: '0 0 0 2px ' + act.bg
+                        }}
+                      />
+                      {/* Event content */}
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="text-xs font-extrabold text-gray-800 leading-snug">{act.title}</h4>
+                          <span
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0"
+                            style={{ background: act.bg, color: act.color }}
+                          >
+                            {act.badge}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-1 font-semibold">{act.date}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

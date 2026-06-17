@@ -7,7 +7,7 @@ import { useState } from 'react';
 import {
   BookOpen, Calendar, CheckCircle2, Clock,
   RefreshCw, AlertTriangle, ChevronRight,
-  Zap, Info, Send, Star, Shield, TrendingUp
+  Zap, Info, Send, Shield, TrendingUp, FileText
 } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════
@@ -114,14 +114,14 @@ function RenewSheet({ onClose, onSubmit }: RenewSheetProps) {
               const isCurrent  = pkg.tag === 'Đang dùng';
               return (
                 <button
-                  key={pkg.id}
-                  onClick={() => setSelected(pkg.id)}
-                  className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-left transition-all active:scale-98"
-                  style={{
-                    border:     isSelected ? '2px solid #0E7C7B' : '1.5px solid rgba(0,0,0,0.09)',
-                    background: isSelected ? 'rgba(14,124,123,0.06)' : 'white',
-                    boxShadow:  isSelected ? '0 4px 16px rgba(14,124,123,0.14)' : 'none',
-                  }}
+                   key={pkg.id}
+                   onClick={() => setSelected(pkg.id)}
+                   className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-left transition-all active:scale-98"
+                   style={{
+                     border:     isSelected ? '2px solid #0E7C7B' : '1.5px solid rgba(0,0,0,0.09)',
+                     background: isSelected ? 'rgba(14,124,123,0.06)' : 'white',
+                     boxShadow:  isSelected ? '0 4px 16px rgba(14,124,123,0.14)' : 'none',
+                   }}
                 >
                   {/* Radio */}
                   <div
@@ -241,14 +241,22 @@ function SuccessToast({ pkg, onDismiss }: { pkg: typeof SUGGESTIONS[0]; onDismis
 interface MemberPackageScreenProps {
   onNavigate?: (screen: string) => void;
   onRenew?:    () => void;
+  hasActivePackage?: boolean;
 }
 
-export function MemberPackageScreen({ onNavigate, onRenew }: MemberPackageScreenProps) {
+export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = true }: MemberPackageScreenProps) {
+  const [activeTab, setActiveTab] = useState<'main' | 'history'>('main');
   const [showSheet,   setShowSheet]   = useState(false);
   const [sentPkg,     setSentPkg]     = useState<typeof SUGGESTIONS[0] | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const status   = getStatus(PACKAGE.remaining);
   const progress = PACKAGE.attended / PACKAGE.total;   // used / total
+
+  const INVOICES = [
+    { id: 'INV-109', date: '01/04/2026', pkgName: 'Gói 12 buổi', amount: '2.400.000đ', method: 'Chuyển khoản QR', status: 'Đã thanh toán', coach: 'Coach Nam' },
+    { id: 'INV-084', date: '01/03/2026', pkgName: 'Gói 8 buổi', amount: '1.600.000đ', method: 'Tiền mặt', status: 'Đã hoàn thành', coach: 'Coach Nam' }
+  ];
 
   function handleSubmit(pkg: typeof SUGGESTIONS[0]) {
     setShowSheet(false);
@@ -270,13 +278,33 @@ export function MemberPackageScreen({ onNavigate, onRenew }: MemberPackageScreen
         <div className="absolute pointer-events-none" style={{ top:14, right:50, width:80,height:80,borderRadius:'50%',background:'rgba(255,255,255,0.028)' }} />
         <div className="absolute pointer-events-none" style={{ bottom:-18,left:-14,width:120,height:120,borderRadius:'50%',background:'rgba(42,157,143,0.09)' }} />
 
-        <div className="relative px-5 pt-14 pb-6">
+        <div className="relative px-5 pt-14 pb-4">
           <p style={{ fontSize:11, color:'rgba(255,255,255,0.48)', fontWeight:700, letterSpacing:'0.06em' }}>
             HỘI VIÊN
           </p>
           <h1 style={{ fontSize:24, fontWeight:900, color:'white', letterSpacing:'-0.5px', marginTop:2 }}>
             Gói học của tôi
           </h1>
+
+          {/* Segment controls */}
+          <div className="flex bg-black/20 rounded-xl p-1 mt-3.5">
+            <button
+              onClick={() => setActiveTab('main')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'main' ? 'bg-white text-teal-900 shadow' : 'text-white/75 hover:text-white'
+              }`}
+            >
+              {hasActivePackage ? 'Gói hiện tại' : 'Mua gói học'}
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'history' ? 'bg-white text-teal-900 shadow' : 'text-white/75 hover:text-white'
+              }`}
+            >
+              Lịch sử hóa đơn
+            </button>
+          </div>
         </div>
       </div>
 
@@ -286,311 +314,353 @@ export function MemberPackageScreen({ onNavigate, onRenew }: MemberPackageScreen
       <div className="flex-1 overflow-y-auto pb-28">
         <div className="px-4 pt-4 space-y-4">
 
-          {/* ─────────────────────────────────────────
-              CURRENT PACKAGE CARD
-          ───────────────────────────────────────── */}
-          <div
-            className="rounded-3xl overflow-hidden"
-            style={{
-              background: status.cardBg,
-              boxShadow:  `0 12px 40px ${status.shadow}`,
-            }}
-          >
-            {/* Card content */}
-            <div className="px-5 pt-5 pb-5">
-
-              {/* Top row: label + status badge */}
-              <div className="flex items-start justify-between mb-1">
-                <div>
-                  <p style={{ fontSize:11, color:'rgba(255,255,255,0.52)', fontWeight:700, letterSpacing:'0.06em' }}>
-                    GÓI HIỆN TẠI
-                  </p>
-                  <p style={{ fontSize:22, fontWeight:900, color:'white', letterSpacing:'-0.4px', marginTop:2 }}>
-                    {PACKAGE.name}
-                  </p>
-                </div>
-                <div
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-2xl flex-shrink-0 mt-1"
-                  style={{ background:'rgba(255,255,255,0.18)', border:'1.5px solid rgba(255,255,255,0.28)' }}
-                >
-                  <div className="w-2 h-2 rounded-full" style={{ background:'white' }} />
-                  <span style={{ fontSize:11, fontWeight:900, color:'white' }}>{status.label}</span>
-                </div>
-              </div>
-
-              {/* Start date */}
-              <div className="flex items-center gap-1.5 mb-5">
-                <Calendar style={{ width:12, height:12, color:'rgba(255,255,255,0.55)' }} />
-                <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)', fontWeight:600 }}>
-                  Ngày bắt đầu: {PACKAGE.startDate}
-                </span>
-              </div>
-
-              {/* Stats row */}
-              <div
-                className="grid grid-cols-3 gap-0 rounded-2xl overflow-hidden mb-5"
-                style={{ background:'rgba(0,0,0,0.14)' }}
-              >
-                {[
-                  { label:'Tổng buổi', value: PACKAGE.total,     unit:'buổi', dimmer: false },
-                  { label:'Đã học',    value: PACKAGE.attended,  unit:'buổi', dimmer: false },
-                  { label:'Còn lại',   value: PACKAGE.remaining, unit:'buổi', dimmer: false },
-                ].map((stat, i) => (
+          {activeTab === 'main' ? (
+            /* ========================================================
+               TAB: MAIN (CURRENT PACKAGE OR SHOPPING SUGGESTIONS)
+               ======================================================== */
+            <>
+              {hasActivePackage ? (
+                <>
+                  {/* CURRENT PACKAGE CARD */}
                   <div
-                    key={i}
-                    className="flex flex-col items-center justify-center py-4"
+                    className="rounded-3xl overflow-hidden"
                     style={{
-                      borderRight: i < 2 ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                      background: status.cardBg,
+                      boxShadow:  `0 12px 40px ${status.shadow}`,
                     }}
                   >
-                    <span style={{ fontSize:30, fontWeight:900, color:'white', lineHeight:1, letterSpacing:'-1.5px' }}>
-                      {stat.value}
-                    </span>
-                    <span style={{ fontSize:10, color:'rgba(255,255,255,0.55)', fontWeight:600, marginTop:3 }}>
-                      {stat.unit}
-                    </span>
-                    <span style={{ fontSize:9, color:'rgba(255,255,255,0.38)', fontWeight:700, marginTop:2, letterSpacing:'0.04em' }}>
-                      {stat.label.toUpperCase()}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    {/* Card content */}
+                    <div className="px-5 pt-5 pb-5">
+                      {/* Top row: label + status badge */}
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <p style={{ fontSize:11, color:'rgba(255,255,255,0.52)', fontWeight:700, letterSpacing:'0.06em' }}>
+                            GÓI HIỆN TẠI
+                          </p>
+                          <p style={{ fontSize:22, fontWeight:900, color:'white', letterSpacing:'-0.4px', marginTop:2 }}>
+                            {PACKAGE.name}
+                          </p>
+                        </div>
+                        <div
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-2xl flex-shrink-0 mt-1"
+                          style={{ background:'rgba(255,255,255,0.18)', border:'1.5px solid rgba(255,255,255,0.28)' }}
+                        >
+                          <div className="w-2 h-2 rounded-full" style={{ background:'white' }} />
+                          <span style={{ fontSize:11, fontWeight:900, color:'white' }}>{status.label}</span>
+                        </div>
+                      </div>
 
-              {/* Progress bar */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span style={{ fontSize:10, color:'rgba(255,255,255,0.50)', fontWeight:700, letterSpacing:'0.04em' }}>
-                    TIẾN ĐỘ SỬ DỤNG
-                  </span>
-                  <span style={{ fontSize:11, color:'rgba(255,255,255,0.72)', fontWeight:800 }}>
-                    {PACKAGE.attended}/{PACKAGE.total} buổi đã dùng
-                  </span>
-                </div>
-
-                {/* Track */}
-                <div className="relative rounded-full overflow-hidden" style={{ height:10, background:'rgba(255,255,255,0.16)' }}>
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width:      `${progress * 100}%`,
-                      background: 'rgba(255,255,255,0.72)',
-                    }}
-                  />
-                </div>
-
-                {/* Ticks */}
-                <div className="flex justify-between mt-1.5">
-                  <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>0</span>
-                  <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>{Math.round(PACKAGE.total / 2)}</span>
-                  <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>{PACKAGE.total}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Alert banner for low/empty */}
-            {status.alert && (
-              <div
-                className="flex items-center gap-3 px-5 py-3.5"
-                style={{ background:'rgba(0,0,0,0.20)', borderTop:'1px solid rgba(255,255,255,0.12)' }}
-              >
-                <AlertTriangle style={{ width:15, height:15, color:'rgba(255,255,255,0.85)', flexShrink:0 }} />
-                <p style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600, lineHeight:1.5 }}>
-                  {PACKAGE.remaining === 0
-                    ? 'Bạn đã hết buổi học. Hãy yêu cầu gia hạn để tiếp tục.'
-                    : `Chỉ còn ${PACKAGE.remaining} buổi! Hãy gia hạn để không bị gián đoạn.`}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* ─────────────────────────────────────────
-              RENEW CTA BUTTON
-          ───────────────────────────────────────── */}
-          <button
-            onClick={() => {
-              if (onRenew) onRenew();
-              else setShowSheet(true);
-            }}
-            className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl active:scale-98 transition-all"
-            style={{
-              background: 'linear-gradient(135deg,#0E7C7B 0%,#2A9D8F 100%)',
-              boxShadow:  '0 8px 28px rgba(14,124,123,0.32)',
-              border:     '1.5px solid rgba(255,255,255,0.15)',
-            }}
-          >
-            <div
-              className="flex items-center justify-center rounded-xl"
-              style={{ width:34, height:34, background:'rgba(255,255,255,0.18)' }}
-            >
-              <RefreshCw style={{ width:16, height:16, color:'white' }} />
-            </div>
-            <span style={{ fontSize:16, fontWeight:900, color:'white' }}>
-              Yêu cầu gia hạn gói
-            </span>
-            <ChevronRight style={{ width:18, height:18, color:'rgba(255,255,255,0.6)' }} />
-          </button>
-
-          {/* ─────────────────────────────────────────
-              PACKAGE SUGGESTIONS
-          ───────────────────────────────────────── */}
-          <div>
-            {/* Section header */}
-            <div className="flex items-center gap-2.5 mb-3">
-              <div
-                className="flex items-center justify-center rounded-xl"
-                style={{ width:28, height:28, background:'rgba(14,124,123,0.10)' }}
-              >
-                <BookOpen style={{ width:13, height:13, color:'#0E7C7B' }} />
-              </div>
-              <p style={{ fontSize:12, fontWeight:900, color:'#1F2933', letterSpacing:'0.04em' }}>
-                CÁC GÓI HỌC
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {SUGGESTIONS.map((pkg) => {
-                const isCurrent = pkg.id === 2;
-                const isBest    = pkg.id === 3;
-                return (
-                  <div
-                    key={pkg.id}
-                    className="bg-white rounded-3xl overflow-hidden"
-                    style={{
-                      border:    isCurrent ? '2px solid rgba(14,124,123,0.35)' : '1.5px solid rgba(0,0,0,0.07)',
-                      boxShadow: isCurrent ? '0 6px 24px rgba(14,124,123,0.12)' : '0 2px 10px rgba(0,0,0,0.05)',
-                    }}
-                  >
-                    {/* Accent top bar for current */}
-                    {isCurrent && (
-                      <div style={{ height:3, background:'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />
-                    )}
-
-                    <div className="flex items-center gap-4 px-5 py-4">
-                      {/* Icon */}
-                      <div
-                        className="flex items-center justify-center rounded-2xl flex-shrink-0"
-                        style={{
-                          width:  50, height:50,
-                          background: isCurrent ? 'linear-gradient(135deg,#0E7C7B,#2A9D8F)'
-                                    : isBest    ? 'rgba(244,162,97,0.12)'
-                                    :             'rgba(0,0,0,0.06)',
-                          boxShadow: isCurrent ? '0 6px 16px rgba(14,124,123,0.28)' : 'none',
-                        }}
-                      >
-                        <span style={{
-                          fontSize:   22, fontWeight:900, lineHeight:1,
-                          color:      isCurrent ? 'white' : isBest ? '#E8832A' : '#9CA3AF',
-                        }}>
-                          {pkg.sessions}
+                      {/* Start date */}
+                      <div className="flex items-center gap-1.5 mb-5">
+                        <Calendar style={{ width:12, height:12, color:'rgba(255,255,255,0.55)' }} />
+                        <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)', fontWeight:600 }}>
+                          Ngày bắt đầu: {PACKAGE.startDate}
                         </span>
                       </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p style={{ fontSize:16, fontWeight:900, color: isCurrent ? '#0E7C7B' : '#1F2933' }}>
-                            {pkg.name}
-                          </p>
-                          {pkg.tag && (
-                            <span
-                              className="px-2 py-1 rounded-xl"
-                              style={{
-                                fontSize:  9, fontWeight:800,
-                                background: isCurrent ? 'rgba(14,124,123,0.10)' : 'rgba(244,162,97,0.18)',
-                                color:      isCurrent ? '#0E7C7B'               : '#C06030',
-                              }}
-                            >
-                              {isCurrent ? '✓ ' : '★ '}{pkg.tag}
+                      {/* Stats row */}
+                      <div
+                        className="grid grid-cols-3 gap-0 rounded-2xl overflow-hidden mb-5"
+                        style={{ background:'rgba(0,0,0,0.14)' }}
+                      >
+                        {[
+                          { label:'Tổng buổi', value: PACKAGE.total,     unit:'buổi', dimmer: false },
+                          { label:'Đã học',    value: PACKAGE.attended,  unit:'buổi', dimmer: false },
+                          { label:'Còn lại',   value: PACKAGE.remaining, unit:'buổi', dimmer: false },
+                        ].map((stat, i) => (
+                          <div
+                            key={i}
+                            className="flex flex-col items-center justify-center py-4"
+                            style={{
+                              borderRight: i < 2 ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                            }}
+                          >
+                            <span style={{ fontSize:30, fontWeight:900, color:'white', lineHeight:1, letterSpacing:'-1.5px' }}>
+                              {stat.value}
                             </span>
-                          )}
-                        </div>
-                        <p style={{ fontSize:12, color:'#9CA3AF', fontWeight:500, marginTop:2 }}>
-                          {pkg.sessions} buổi · {pkg.perSession}
-                        </p>
+                            <span style={{ fontSize:10, color:'rgba(255,255,255,0.55)', fontWeight:600, marginTop:3 }}>
+                              {stat.unit}
+                            </span>
+                            <span style={{ fontSize:9, color:'rgba(255,255,255,0.38)', fontWeight:700, marginTop:2, letterSpacing:'0.04em' }}>
+                              {stat.label.toUpperCase()}
+                            </span>
+                          </div>
+                        ))}
                       </div>
 
-                      {/* Price */}
-                      <div className="text-right flex-shrink-0">
-                        <p style={{
-                          fontSize:   17, fontWeight:900,
-                          color:      isCurrent ? '#0E7C7B' : '#1F2933',
-                          letterSpacing: '-0.3px',
-                        }}>
-                          {pkg.price}
-                        </p>
-                        {isBest && (
-                          <p style={{ fontSize:9, color:'#E8832A', fontWeight:700, marginTop:1 }}>
-                            Rẻ hơn 6%
-                          </p>
-                        )}
+                      {/* Progress bar */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span style={{ fontSize:10, color:'rgba(255,255,255,0.50)', fontWeight:700, letterSpacing:'0.04em' }}>
+                            TIẾN ĐỘ SỬ DỤNG
+                          </span>
+                          <span style={{ fontSize:11, color:'rgba(255,255,255,0.72)', fontWeight:800 }}>
+                            {PACKAGE.attended}/{PACKAGE.total} buổi đã dùng
+                          </span>
+                        </div>
+
+                        {/* Track */}
+                        <div className="relative rounded-full overflow-hidden" style={{ height:10, background:'rgba(255,255,255,0.16)' }}>
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width:      `${progress * 100}%`,
+                              background: 'rgba(255,255,255,0.72)',
+                            }}
+                          />
+                        </div>
+
+                        {/* Ticks */}
+                        <div className="flex justify-between mt-1.5">
+                          <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>0</span>
+                          <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>{Math.round(PACKAGE.total / 2)}</span>
+                          <span style={{ fontSize:9, color:'rgba(255,255,255,0.35)', fontWeight:600 }}>{PACKAGE.total}</span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Alert banner for low/empty */}
+                    {status.alert && (
+                      <div
+                        className="flex items-center gap-3 px-5 py-3.5"
+                        style={{ background:'rgba(0,0,0,0.20)', borderTop:'1px solid rgba(255,255,255,0.12)' }}
+                      >
+                        <AlertTriangle style={{ width:15, height:15, color:'rgba(255,255,255,0.85)', flexShrink:0 }} />
+                        <p style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:600, lineHeight:1.5 }}>
+                          {PACKAGE.remaining === 0
+                            ? 'Bạn đã hết buổi học. Hãy yêu cầu gia hạn để tiếp tục.'
+                            : `Chỉ còn ${PACKAGE.remaining} buổi! Hãy gia hạn để không bị gián đoạn.`}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          {/* ─────────────────────────────────────────
-              NOTE CARD
-          ───────────────────────────────────────── */}
-          <div
-            className="flex items-start gap-3.5 px-4 py-4 rounded-2xl"
-            style={{
-              background: 'rgba(233,196,106,0.10)',
-              border:     '1.5px solid rgba(233,196,106,0.32)',
-            }}
-          >
-            <div
-              className="flex items-center justify-center rounded-xl flex-shrink-0 mt-0.5"
-              style={{ width:34, height:34, background:'rgba(233,196,106,0.22)' }}
-            >
-              <Shield style={{ width:15, height:15, color:'#B8860B' }} />
-            </div>
-            <div>
-              <p style={{ fontSize:12, fontWeight:800, color:'#7A5C00', marginBottom:4 }}>
-                Lưu ý quan trọng
-              </p>
-              <ul style={{ fontSize:11, color:'#7A5C00', fontWeight:500, lineHeight:1.8 }}>
-                <li>• Yêu cầu gia hạn sẽ được gửi cho Admin xác nhận.</li>
-                <li>• Buổi học được cộng sau khi Admin duyệt.</li>
-                <li>• Đây không phải thanh toán chính thức.</li>
-                <li>• Liên hệ Coach nếu cần hỗ trợ thêm.</li>
-              </ul>
-            </div>
-          </div>
+                  {/* RENEW CTA BUTTON */}
+                  <button
+                    onClick={() => {
+                      if (onRenew) onRenew();
+                      else setShowSheet(true);
+                    }}
+                    className="flex items-center justify-center gap-3 w-full py-4 rounded-2xl active:scale-98 transition-all"
+                    style={{
+                      background: 'linear-gradient(135deg,#0E7C7B 0%,#2A9D8F 100%)',
+                      boxShadow:  '0 8px 28px rgba(14,124,123,0.32)',
+                      border:     '1.5px solid rgba(255,255,255,0.15)',
+                    }}
+                  >
+                    <div
+                      className="flex items-center justify-center rounded-xl"
+                      style={{ width:34, height:34, background:'rgba(255,255,255,0.18)' }}
+                    >
+                      <RefreshCw style={{ width:16, height:16, color:'white' }} />
+                    </div>
+                    <span style={{ fontSize:16, fontWeight:900, color:'white' }}>
+                      Yêu cầu gia hạn gói học
+                    </span>
+                    <ChevronRight style={{ width:18, height:18, color:'rgba(255,255,255,0.6)' }} />
+                  </button>
 
-          {/* ─────────────────────────────────────────
-              CLASS INFO strip
-          ───────────────────────────────────────── */}
-          <div
-            className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
-            style={{ background:'rgba(14,124,123,0.07)', border:'1.5px solid rgba(14,124,123,0.14)' }}
-          >
-            <div
-              className="flex items-center justify-center rounded-xl flex-shrink-0"
-              style={{ width:36, height:36, background:'rgba(14,124,123,0.12)' }}
-            >
-              <TrendingUp style={{ width:16, height:16, color:'#0E7C7B' }} />
+                  {/* CLASS INFO strip */}
+                  <div
+                    className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
+                    style={{ background:'rgba(14,124,123,0.07)', border:'1.5px solid rgba(14,124,123,0.14)' }}
+                  >
+                    <div
+                      className="flex items-center justify-center rounded-xl flex-shrink-0"
+                      style={{ width:36, height:36, background:'rgba(14,124,123,0.12)' }}
+                    >
+                      <TrendingUp style={{ width:16, height:16, color:'#0E7C7B' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p style={{ fontSize:13, fontWeight:800, color:'#0E7C7B' }}>{PACKAGE.class}</p>
+                      <p style={{ fontSize:11, color:'#6B7280', fontWeight:500, marginTop:1 }}>
+                        {PACKAGE.coach} · Thứ 3 & Thứ 6 · 18:00 – 19:30
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{ background:'#2A9D8F' }} />
+                      <span style={{ fontSize:10, fontWeight:700, color:'#2A9D8F' }}>Đang học</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Non-package active banner */
+                <div className="bg-white rounded-3xl p-5 border border-gray-150 flex flex-col items-center text-center shadow-sm py-8">
+                  <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-3 border border-amber-100">
+                    <AlertTriangle size={22} />
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-800">Bạn chưa đăng ký khóa học học viên</h4>
+                  <p className="text-xs text-gray-400 mt-1 max-w-[240px] leading-relaxed">
+                    Đăng ký mua một gói học tập bên dưới để được xếp lớp, học thử và theo dõi kết quả.
+                  </p>
+                </div>
+              )}
+
+              {/* PACKAGE SUGGESTIONS */}
+              <div>
+                <div className="flex items-center gap-2.5 mb-3 mt-2">
+                  <div
+                    className="flex items-center justify-center rounded-xl"
+                    style={{ width:28, height:28, background:'rgba(14,124,123,0.10)' }}
+                  >
+                    <BookOpen style={{ width:13, height:13, color:'#0E7C7B' }} />
+                  </div>
+                  <p style={{ fontSize:12, fontWeight:900, color:'#1F2933', letterSpacing:'0.04em' }}>
+                    CÁC GÓI HỌC CÓ SẴN
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {SUGGESTIONS.map((pkg) => {
+                    const isCurrent = hasActivePackage && pkg.id === 2;
+                    const isBest    = pkg.id === 3;
+                    return (
+                      <div
+                        key={pkg.id}
+                        className="bg-white rounded-3xl overflow-hidden"
+                        style={{
+                          border:    isCurrent ? '2px solid rgba(14,124,123,0.35)' : '1.5px solid rgba(0,0,0,0.07)',
+                          boxShadow: isCurrent ? '0 6px 24px rgba(14,124,123,0.12)' : '0 2px 10px rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        {isCurrent && (
+                          <div style={{ height:3, background:'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />
+                        )}
+
+                        <div className="flex items-center gap-4 px-5 py-4">
+                          <div
+                            className="flex items-center justify-center rounded-2xl flex-shrink-0"
+                            style={{
+                              width:  50, height:50,
+                              background: isCurrent ? 'linear-gradient(135deg,#0E7C7B,#2A9D8F)'
+                                        : isBest    ? 'rgba(244,162,97,0.12)'
+                                        :             'rgba(0,0,0,0.06)',
+                              boxShadow: isCurrent ? '0 6px 16px rgba(14,124,123,0.28)' : 'none',
+                            }}
+                          >
+                            <span style={{
+                              fontSize:   22, fontWeight:900, lineHeight:1,
+                              color:      isCurrent ? 'white' : isBest ? '#E8832A' : '#9CA3AF',
+                            }}>
+                              {pkg.sessions}
+                            </span>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p style={{ fontSize:16, fontWeight:900, color: isCurrent ? '#0E7C7B' : '#1F2933' }}>
+                                {pkg.name}
+                              </p>
+                              {pkg.tag && (
+                                <span
+                                  className="px-2 py-1 rounded-xl"
+                                  style={{
+                                    fontSize:  9, fontWeight:800,
+                                    background: isCurrent ? 'rgba(14,124,123,0.10)' : 'rgba(244,162,97,0.18)',
+                                    color:      isCurrent ? '#0E7C7B'               : '#C06030',
+                                  }}
+                                >
+                                  {isCurrent ? '✓ ' : '★ '}{pkg.tag}
+                                </span>
+                              )}
+                            </div>
+                            <p style={{ fontSize:12, color:'#9CA3AF', fontWeight:500, marginTop:2 }}>
+                              {pkg.sessions} buổi · {pkg.perSession}
+                            </p>
+                          </div>
+
+                          <div className="text-right flex-shrink-0 font-sans">
+                            <p style={{
+                              fontSize:   17, fontWeight:900,
+                              color:      isCurrent ? '#0E7C7B' : '#1F2933',
+                              letterSpacing: '-0.3px',
+                            }}>
+                              {pkg.price}
+                            </p>
+                            {isBest && (
+                              <p style={{ fontSize:9, color:'#E8832A', fontWeight:700, marginTop:1 }}>
+                                Rẻ hơn 6%
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* NOTE CARD */}
+              <div
+                className="flex items-start gap-3.5 px-4 py-4 rounded-2xl"
+                style={{
+                  background: 'rgba(233,196,106,0.10)',
+                  border:     '1.5px solid rgba(233,196,106,0.32)',
+                }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-xl flex-shrink-0 mt-0.5"
+                  style={{ width:34, height:34, background:'rgba(233,196,106,0.22)' }}
+                >
+                  <Shield style={{ width:15, height:15, color:'#B8860B' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize:12, fontWeight:800, color:'#7A5C00', marginBottom:4 }}>
+                    Lưu ý quan trọng
+                  </p>
+                  <ul style={{ fontSize:11, color:'#7A5C00', fontWeight:500, lineHeight:1.8 }}>
+                    <li>• Yêu cầu đăng ký sẽ được gửi cho Admin xác nhận.</li>
+                    <li>• Buổi học được kích hoạt sau khi Admin duyệt.</li>
+                    <li>• Đây không phải thanh toán trực tuyến chính thức.</li>
+                    <li>• Liên hệ Coach/Admin để được hỗ trợ xếp lớp.</li>
+                  </ul>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* ========================================================
+               TAB: HISTORY (INVOICES LIST)
+               ======================================================== */
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div
+                  className="flex items-center justify-center rounded-xl"
+                  style={{ width:28, height:28, background:'rgba(14,124,123,0.10)' }}
+                >
+                  <FileText style={{ width:13, height:13, color:'#0E7C7B' }} />
+                </div>
+                <p style={{ fontSize:12, fontWeight:900, color:'#1F2933', letterSpacing:'0.04em' }}>
+                  LỊCH SỬ HÓA ĐƠN ĐÃ ĐĂNG KÝ
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                {INVOICES.map(inv => (
+                  <button
+                    key={inv.id}
+                    onClick={() => setSelectedInvoice(inv)}
+                    className="w-full bg-white rounded-2xl p-4 flex items-center justify-between border border-gray-100 shadow-sm active:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-left">
+                      <p className="text-xs font-extrabold text-teal-800">{inv.pkgName} • {inv.id}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">Ngày: {inv.date} · {inv.method}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-black text-gray-800">{inv.amount}</p>
+                      <span className="text-[9px] font-extrabold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md mt-1 inline-block">
+                        {inv.status}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex-1">
-              <p style={{ fontSize:13, fontWeight:800, color:'#0E7C7B' }}>{PACKAGE.class}</p>
-              <p style={{ fontSize:11, color:'#6B7280', fontWeight:500, marginTop:1 }}>
-                {PACKAGE.coach} · Thứ 3 & Thứ 6 · 18:00 – 19:30
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ background:'#2A9D8F' }} />
-              <span style={{ fontSize:10, fontWeight:700, color:'#2A9D8F' }}>Đang học</span>
-            </div>
-          </div>
+          )}
 
         </div>
       </div>
 
-      {/* ════════════════════════════════════════
-          RENEW BOTTOM SHEET
-      ════════════════════════════════════════ */}
+      {/* RENEW BOTTOM SHEET */}
       {showSheet && (
         <RenewSheet
           onClose={() => setShowSheet(false)}
@@ -598,11 +668,62 @@ export function MemberPackageScreen({ onNavigate, onRenew }: MemberPackageScreen
         />
       )}
 
-      {/* ════════════════════════════════════════
-          SUCCESS TOAST
-      ════════════════════════════════════════ */}
+      {/* SUCCESS TOAST */}
       {sentPkg && (
         <SuccessToast pkg={sentPkg} onDismiss={() => setSentPkg(null)} />
+      )}
+
+      {/* INVOICE DETAIL MODAL */}
+      {selectedInvoice && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+          onClick={() => setSelectedInvoice(null)}
+        >
+          <div
+            className="bg-white w-full max-w-[340px] rounded-3xl p-5 shadow-2xl relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-center font-black text-teal-900 border-b border-gray-100 pb-3 mb-4 text-sm">
+              CHI TIẾT HÓA ĐƠN
+            </h3>
+            
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-400 font-semibold">Mã hóa đơn:</span>
+                <span className="font-extrabold text-teal-850">{selectedInvoice.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400 font-semibold">Gói đăng ký:</span>
+                <span className="font-bold text-gray-800">{selectedInvoice.pkgName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400 font-semibold">Ngày thanh toán:</span>
+                <span className="font-bold text-gray-700">{selectedInvoice.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400 font-semibold">Hình thức:</span>
+                <span className="font-bold text-gray-750">{selectedInvoice.method}</span>
+              </div>
+              <div className="flex justify-between border-t border-gray-100 pt-3">
+                <span className="text-gray-400 font-extrabold">Tổng tiền:</span>
+                <span className="text-sm font-black text-red-500">{selectedInvoice.amount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400 font-semibold">Trạng thái:</span>
+                <span className="px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-700 text-[10px] font-black">
+                  {selectedInvoice.status}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedInvoice(null)}
+              className="w-full mt-6 bg-teal-700 active:bg-teal-800 py-3.5 rounded-2xl text-white font-bold text-xs shadow-md active:scale-95 transition-transform"
+            >
+              Đóng Hóa Đơn
+            </button>
+          </div>
+        </div>
       )}
 
     </div>

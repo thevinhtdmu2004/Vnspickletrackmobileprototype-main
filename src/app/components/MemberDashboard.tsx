@@ -2,16 +2,17 @@
  * MemberDashboard — VNS PickleTrack
  * Trang chủ Hội viên · Android 390 × 844
  */
+import { useState } from 'react';
 import {
   Bell, Calendar, Clock, MapPin, ChevronRight,
-  TrendingUp, BookOpen, MessageCircle,
+  TrendingUp, BookOpen, MessageCircle, Check,
   RefreshCw, AlertTriangle, User, Award, Percent,
-  PauseCircle, XCircle, PlusCircle, FileText, Video, Gift
+  XCircle, PlusCircle, FileText, Video, Info, ShoppingCart
 } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════
    MOCK DATA
-══════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════ */
 const MEMBER = {
   name: 'Nguyễn Văn A',
   initials: 'NA',
@@ -57,21 +58,62 @@ function getSessionUrgency(n: number) {
 
 /* ══════════════════════════════════════════════════════
    PROPS
-══════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════ */
 interface MemberDashboardProps {
   onNavigate: (screen: string) => void;
   onNotification?: () => void;
+  hasActivePackage?: boolean;
+  setHasActivePackage?: (val: boolean) => void;
+  notifications?: any[];
+  unreadNotifications?: boolean;
+  onMarkNotificationsAsRead?: () => void;
+  onOpenCart?: () => void;
+  cartItemsCount?: number;
 }
 
 /* ══════════════════════════════════════════════════════
    COMPONENT
-══════════════════════════════════════════════════════ */
-export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardProps) {
+   ══════════════════════════════════════════════════════ */
+export function MemberDashboard({
+  onNavigate,
+  hasActivePackage = true,
+  setHasActivePackage,
+  notifications = [],
+  unreadNotifications = false,
+  onMarkNotificationsAsRead,
+  onOpenCart = () => {},
+  cartItemsCount = 0
+}: MemberDashboardProps) {
   const urgency = getSessionUrgency(MEMBER.remaining);
-  const statusCfg = STATUS_CFG[MEMBER.status];
-  const progress = MEMBER.remaining / MEMBER.total;   // remaining / total (buổi còn lại)
+  const progress = MEMBER.remaining / MEMBER.total;   // remaining / total
   const isLow = MEMBER.remaining <= 5;
   const isCritical = MEMBER.remaining <= 2;
+
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [lockedAlert, setLockedAlert] = useState<string | null>(null);
+
+  const handleOpenNotifications = () => {
+    setShowNotifications(true);
+    if (onMarkNotificationsAsRead) {
+      onMarkNotificationsAsRead();
+    }
+  };
+
+  const handleActionClick = (screen: string, label: string) => {
+    // Check if the action belongs to student specific features (locked for non-active package members)
+    const isStudentFeature = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(screen);
+    
+    if (isStudentFeature && !hasActivePackage) {
+      setLockedAlert(`Tính năng "${label}" chỉ dành cho Học viên đang học. Bạn cần mua gói tập tại tab Gói Học để mở khóa tính năng này!`);
+      return;
+    }
+    
+    if (screen === 'member-attendance-history') {
+      onNavigate('member-schedule'); // Redirect merged history to schedule (tab 2)
+    } else {
+      onNavigate(screen);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#F0F4F5' }}>
@@ -93,7 +135,6 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
 
             {/* Left: avatar + greeting */}
             <div className="flex items-center gap-3.5">
-              {/* Avatar */}
               <div
                 className="flex items-center justify-center rounded-2xl flex-shrink-0"
                 style={{
@@ -108,7 +149,6 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
                 {MEMBER.initials}
               </div>
 
-              {/* Greeting */}
               <div>
                 <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', fontWeight: 600, lineHeight: 1.3 }}>
                   Xin chào 👋
@@ -119,292 +159,210 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
                 <div className="flex items-center gap-1.5 mt-1">
                   <Award style={{ width: 11, height: 11, color: 'rgba(255,255,255,0.5)' }} />
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
-                    {MEMBER.role}
+                    {hasActivePackage ? 'Học viên active' : 'Hội viên chưa có gói'}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Right: bell */}
-            <button
-              onClick={onNotification}
-              className="relative flex items-center justify-center rounded-2xl active:scale-90 transition-transform"
-              style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.14)', border: '1.5px solid rgba(255,255,255,0.22)' }}
-            >
-              <Bell style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.85)' }} />
-              {isCritical && (
-                <span
-                  className="absolute flex items-center justify-center rounded-full"
-                  style={{ top: 7, right: 7, width: 9, height: 9, background: '#F4A261', border: '2px solid rgba(7,94,93,0.8)' }}
-                />
-              )}
-            </button>
+            {/* Right: cart and bell */}
+            <div className="flex gap-2">
+              <button
+                onClick={onOpenCart}
+                className="relative flex items-center justify-center rounded-2xl active:scale-90 transition-transform"
+                style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.14)', border: '1.5px solid rgba(255,255,255,0.22)' }}
+              >
+                <ShoppingCart style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.85)' }} />
+                {cartItemsCount > 0 && (
+                  <span
+                    className="absolute flex items-center justify-center rounded-full text-[9px] font-black text-white bg-red-500 animate-pulse"
+                    style={{ top: -4, right: -4, width: 18, height: 18, border: '1.5px solid #075E5D' }}
+                  >
+                    {cartItemsCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={handleOpenNotifications}
+                className="relative flex items-center justify-center rounded-2xl active:scale-90 transition-transform"
+                style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.14)', border: '1.5px solid rgba(255,255,255,0.22)' }}
+              >
+                <Bell style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.85)' }} />
+                {unreadNotifications && (
+                  <span
+                    className="absolute flex items-center justify-center rounded-full"
+                    style={{ top: 10, right: 10, width: 8, height: 8, background: '#EF4444', border: '1.5px solid #075E5D' }}
+                  />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ════════════════════════════════════════
-          SCROLLABLE BODY
-      ════════════════════════════════════════ */}
+      {/* SCROLLABLE BODY */}
       <div className="flex-1 overflow-y-auto pb-28">
         <div className="px-4 pt-4 space-y-4">
 
-          {/* ─────────────────────────────────────────
-              MAIN CARD — Sessions remaining
-          ───────────────────────────────────────── */}
-          <div
-            className="rounded-3xl overflow-hidden"
-            style={{
-              background: urgency.gradient,
-              boxShadow: `0 10px 40px ${urgency.shadow}`,
-            }}
-          >
-            {/* Card body */}
-            <div className="px-5 pt-5 pb-4">
-              {/* Top row: label + status */}
-              <div className="flex items-start justify-between mb-4">
+          {/* UAT Simulator Controls */}
+          {setHasActivePackage && (
+            <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 space-y-2.5">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.05em' }}>
-                    SỐ BUỔI CÒN LẠI
-                  </p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 600, marginTop: 1 }}>
-                    {MEMBER.packageName}
-                  </p>
+                  <p className="text-xs font-bold text-amber-900">UAT Simulator: Trạng thái gói học</p>
+                  <p className="text-[10px] text-amber-700">Chuyển đổi trạng thái gói học để test luồng Hội viên vs Học viên</p>
                 </div>
-
-                {/* Status chip */}
-                <div
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl flex-shrink-0"
-                  style={{ background: statusCfg.bg, border: `1.5px solid ${statusCfg.bg.replace('0.15', '0.4').replace('0.20', '0.45')}` }}
-                >
-                  <div className="w-2 h-2 rounded-full" style={{ background: statusCfg.dot }} />
-                  <span style={{ fontSize: 11, fontWeight: 800, color: statusCfg.color }}>{statusCfg.label}</span>
-                </div>
+                <span className="text-[9px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-lg">Demo</span>
               </div>
-
-              {/* Big number + unit */}
-              <div className="flex items-end gap-2 mb-4">
-                <span
-                  style={{
-                    fontSize: 76, fontWeight: 900, color: 'white', lineHeight: 1,
-                    letterSpacing: '-4px', textShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                  }}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setHasActivePackage(false)}
+                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold border transition-all ${
+                    !hasActivePackage
+                      ? 'bg-amber-700 border-amber-700 text-white shadow-sm'
+                      : 'bg-white border-amber-200 text-amber-800 hover:bg-amber-100/50'
+                  }`}
                 >
-                  {MEMBER.remaining}
-                </span>
-                <div className="mb-2">
-                  <span style={{ fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.75)' }}> / {MEMBER.total}</span>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 600, marginTop: 1 }}>buổi</p>
-                </div>
-
-                {/* "Sắp hết buổi" badge — only when ≤2 */}
-                {isCritical && (
-                  <div
-                    className="ml-auto mb-2 flex items-center gap-1.5 px-3 py-2 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.35)', backdropFilter: 'blur(6px)' }}
-                  >
-                    <AlertTriangle style={{ width: 13, height: 13, color: 'white' }} />
-                    <span style={{ fontSize: 11, fontWeight: 900, color: 'white' }}>Sắp hết buổi</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Progress bar */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Buổi còn lại</span>
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>
-                    {MEMBER.remaining} / {MEMBER.total} buổi
-                  </span>
-                </div>
-                <div
-                  className="rounded-full overflow-hidden"
-                  style={{ height: 8, background: 'rgba(255,255,255,0.18)' }}
+                  Chưa có gói (Hội viên)
+                </button>
+                <button
+                  onClick={() => setHasActivePackage(true)}
+                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold border transition-all ${
+                    hasActivePackage
+                      ? 'bg-teal-700 border-teal-700 text-white shadow-sm'
+                      : 'bg-white border-teal-200 text-teal-800 hover:bg-teal-50'
+                  }`}
                 >
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${progress * 100}%`,
-                      background: 'rgba(255,255,255,0.72)',
-                    }}
-                  />
-                </div>
+                  Có gói học (Học viên)
+                </button>
               </div>
             </div>
+          )}
 
-            {/* Renew CTA strip (only when low) */}
-            {isLow && (
-              <button
-                onClick={() => onNavigate('member-renew-request')}
-                className="flex items-center justify-center gap-2.5 w-full py-3.5 active:opacity-80 transition-opacity"
-                style={{ background: 'rgba(0,0,0,0.18)', borderTop: '1px solid rgba(255,255,255,0.14)' }}
-              >
-                <RefreshCw style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.85)' }} />
-                <span style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>
-                  Yêu cầu gia hạn gói học
-                </span>
-                <ChevronRight style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.6)' }} />
-              </button>
-            )}
-          </div>
+          {/* Locked status banner if has no active package */}
+          {!hasActivePackage && (
+            <div className="bg-red-50 border border-red-100 p-4 rounded-3xl flex gap-3.5 shadow-sm">
+              <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={20} />
+              <div>
+                <h4 className="text-xs font-bold text-red-950">Bạn chưa đăng ký gói học</h4>
+                <p className="text-[11px] text-red-800 leading-normal mt-0.5 font-medium">
+                  Hãy đăng ký gói tập tại mục **Gói học** để được xếp lớp, xem lịch học bù, lịch sử điểm danh, giáo trình và tài liệu học tập của học viên!
+                </p>
+                <button
+                  onClick={() => onNavigate('member-package')}
+                  className="mt-2.5 bg-red-600 hover:bg-red-750 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg"
+                >
+                  Đăng ký gói ngay
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* ─────────────────────────────────────────
-              BUỔI HỌC TIẾP THEO
+              BUỔI HỌC TIẾP THEO (CLASS CARD)
           ───────────────────────────────────────── */}
-          <div>
-            <div className="flex items-center justify-between mb-2.5">
-              <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em' }}>
+          {hasActivePackage && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em', marginBottom: 10 }}>
                 BUỔI HỌC TIẾP THEO
               </p>
-              <button
-                onClick={() => onNavigate('member-schedule')}
-                className="flex items-center gap-1 active:opacity-60"
+
+              <div
+                className="bg-white rounded-3xl overflow-hidden shadow-sm"
+                style={{ border: '1.5px solid rgba(0,0,0,0.06)' }}
               >
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7C7B' }}>Xem lịch</span>
-                <ChevronRight style={{ width: 13, height: 13, color: '#0E7C7B' }} />
-              </button>
-            </div>
+                <div style={{ height: 4, background: 'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />
+                <div className="p-5 flex items-stretch justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <span className="bg-teal-50 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                      Lớp: {NEXT_CLASS.className}
+                    </span>
+                    <h3 style={{ fontSize: 16, fontWeight: 900, color: '#1F2933', marginTop: 8 }}>
+                      {NEXT_CLASS.dayLabel}, ngày {NEXT_CLASS.date}
+                    </h3>
+                    <div className="space-y-1.5 mt-3">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                        <Clock size={13} className="text-teal-600" />
+                        <span>{NEXT_CLASS.timeStart} – {NEXT_CLASS.timeEnd}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                        <MapPin size={13} className="text-teal-600" />
+                        <span>{NEXT_CLASS.court} · {NEXT_CLASS.coach}</span>
+                      </div>
+                    </div>
+                  </div>
 
-            <div
-              className="bg-white rounded-3xl overflow-hidden"
-              style={{ border: '1.5px solid rgba(14,124,123,0.16)', boxShadow: '0 4px 22px rgba(14,124,123,0.10)' }}
-            >
-              {/* Teal top accent line */}
-              <div style={{ height: 3, background: 'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />
-
-              <div className="flex items-center gap-4 px-4 py-4">
-
-                {/* Date block */}
-                <div
-                  className="flex flex-col items-center justify-center rounded-2xl flex-shrink-0"
-                  style={{
-                    width: 60, height: 66,
-                    background: 'linear-gradient(145deg,#0E7C7B,#2A9D8F)',
-                    boxShadow: '0 6px 18px rgba(14,124,123,0.32)',
-                  }}
-                >
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, letterSpacing: '0.02em' }}>
-                    {NEXT_CLASS.dayLabel}
-                  </span>
-                  <span style={{ fontSize: 28, fontWeight: 900, color: 'white', lineHeight: 1.1 }}>
-                    {NEXT_CLASS.dayNum}
-                  </span>
-                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
-                    {NEXT_CLASS.month}
-                  </span>
+                  <div className="flex flex-col items-center justify-center pr-1 flex-shrink-0">
+                    <div className="bg-teal-50 rounded-2xl w-14 h-14 flex flex-col items-center justify-center border border-teal-100">
+                      <span className="text-[10px] text-teal-800 font-bold">Tháng 4</span>
+                      <span className="text-2xl font-black text-teal-800 leading-none">{NEXT_CLASS.dayNum}</span>
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+          )}
 
-                {/* Class info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p style={{ fontSize: 17, fontWeight: 900, color: '#1F2933' }}>
-                      {NEXT_CLASS.className}
+          {/* ─────────────────────────────────────────
+              GÓI HỌC CARD
+          ───────────────────────────────────────── */}
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em', marginBottom: 10 }}>
+              THÔNG TIN SỐ BUỔI
+            </p>
+
+            {hasActivePackage ? (
+              <div
+                className="rounded-3xl p-5 text-white relative overflow-hidden"
+                style={{
+                  background: urgency.gradient,
+                  boxShadow: `0 8px 20px ${urgency.shadow}`,
+                }}
+              >
+                <div className="absolute top-0 right-0 pointer-events-none" style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', transform: 'translate(20px, -20px)' }} />
+                
+                <div className="relative z-10 flex justify-between items-center">
+                  <div>
+                    <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                      {MEMBER.packageName}
+                    </span>
+                    <h3 style={{ fontSize: 24, fontWeight: 900, marginTop: 8, letterSpacing: '-0.5px' }}>
+                      Còn {MEMBER.remaining} / {MEMBER.total} <span className="text-xs font-bold opacity-80">buổi học</span>
+                    </h3>
+                    <p style={{ fontSize: 11, opacity: 0.85, marginTop: 4, fontWeight: 500 }}>
+                      Thời gian học: Thứ 3 & Thứ 6 (18:00)
                     </p>
-                    <span
-                      className="px-2 py-0.5 rounded-lg"
-                      style={{ fontSize: 9, fontWeight: 800, background: 'rgba(14,124,123,0.10)', color: '#0E7C7B' }}
-                    >
-                      Sắp tới
-                    </span>
                   </div>
+                  <button
+                    onClick={() => onNavigate('member-package')}
+                    className="bg-white text-teal-900 rounded-full w-10 h-10 flex items-center justify-center active:scale-90 transition-transform shadow"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
 
-                  {/* Time */}
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Clock style={{ width: 12, height: 12, color: '#6B7280' }} />
-                    <span style={{ fontSize: 13, color: '#4B5563', fontWeight: 700 }}>
-                      {NEXT_CLASS.timeStart} – {NEXT_CLASS.timeEnd}
-                    </span>
-                  </div>
-
-                  {/* Court + Coach */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <MapPin style={{ width: 11, height: 11, color: '#9CA3AF' }} />
-                      <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 600 }}>{NEXT_CLASS.court}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <User style={{ width: 11, height: 11, color: '#9CA3AF' }} />
-                      <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 600 }}>{NEXT_CLASS.coach}</span>
-                    </div>
+                {/* Progress bar */}
+                <div className="mt-4">
+                  <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                    <div className="bg-white h-full rounded-full" style={{ width: `${progress * 100}%` }} />
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* ─────────────────────────────────────────
-              PROMO BANNER: ĐĂNG KÝ HỌC THỬ
-          ───────────────────────────────────────── */}
-          <div
-            onClick={() => onNavigate('member-trial-register')}
-            className="rounded-3xl p-5 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-            style={{
-              background: 'linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)',
-              boxShadow: '0 8px 24px rgba(234,88,12,0.25)'
-            }}
-          >
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-xl -ml-8 -mb-8 pointer-events-none" />
-
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="flex-1 pr-4">
-                <div className="inline-block px-2 py-0.5 bg-white/20 text-white text-[9px] font-black uppercase tracking-wider rounded-md mb-2 border border-white/20 backdrop-blur-sm">
-                  Chương trình đặc biệt
+            ) : (
+              <div className="bg-white rounded-3xl p-5 border border-gray-150 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-xs font-bold text-gray-800">Chưa đăng ký gói tập</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Vui lòng chọn mua gói tập phía dưới</p>
                 </div>
-                <h3 className="text-white font-black text-lg leading-tight mb-1">
-                  Đăng ký Học thử<br />Miễn phí 1 buổi!
-                </h3>
-                <p className="text-white/80 text-xs font-medium">
-                  Trải nghiệm sân bãi và HLV chuyên nghiệp ngay hôm nay.
-                </p>
+                <button
+                  onClick={() => onNavigate('member-package')}
+                  className="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-teal-200"
+                >
+                  Mua gói
+                </button>
               </div>
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-black/10">
-                <Gift size={22} className="text-orange-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* ─────────────────────────────────────────
-              NEW FEATURE: BANNER KHÁM PHÁ KHÓA HỌC SIÊU NỔI BẬT
-          ───────────────────────────────────────── */}
-          <div
-            onClick={() => onNavigate('member-course-list')}
-            className="rounded-3xl p-5 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-all duration-300 border border-white/10"
-            style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #C084FC 100%)',
-              boxShadow: '0 12px 32px rgba(124,58,237,0.35)',
-              transform: 'translateY(-2px)'
-            }}
-          >
-            {/* Background animation design */}
-            <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-indigo-500/30 rounded-full blur-2xl pointer-events-none" />
-
-            {/* Glow border ring */}
-            <div className="absolute inset-0 border border-white/20 rounded-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="flex-1 pr-3">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-yellow-400 text-slate-900 text-[10px] font-black uppercase tracking-wider rounded-lg mb-2 shadow-sm">
-                  Hot • Tặng Giáo Trình + Quà
-                </span>
-                <h3 className="text-white font-extrabold text-xl leading-tight mb-1.5 tracking-tight">
-                  Khám phá Khóa học<br />Pickleball Chuẩn Quốc Tế
-                </h3>
-                <p className="text-indigo-100 text-xs font-semibold leading-relaxed">
-                  Đầy đủ giáo trình độc quyền, tặng kèm Ebook 2026, Video bài tập và Quà tặng giá trị.
-                </p>
-                <div className="flex items-center gap-1.5 mt-3.5">
-                  <span className="text-[11px] font-bold text-yellow-300 flex items-center gap-1">
-                    Xem danh sách lớp ngay ➔
-                  </span>
-                </div>
-              </div>
-              <div className="w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0 border border-white/20 shadow-xl shadow-black/10">
-                <BookOpen size={26} className="text-white" />
-              </div>
-            </div>
+            )}
           </div>
 
           {/* ─────────────────────────────────────────
@@ -444,13 +402,13 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
                   screen: 'member-attendance-history',
                 },
                 {
-                  label: 'Yêu cầu gia hạn',
-                  sub: 'Mua thêm buổi học',
+                  label: hasActivePackage ? 'Yêu cầu gia hạn' : 'Đăng ký gói học',
+                  sub: hasActivePackage ? 'Mua thêm buổi học' : 'Xem các gói học tập',
                   icon: RefreshCw,
                   iconBg: 'rgba(244,162,97,0.14)',
                   iconColor: '#E8832A',
                   border: 'rgba(244,162,97,0.30)',
-                  screen: 'member-renew-request',
+                  screen: hasActivePackage ? 'member-renew-request' : 'member-package',
                 },
                 {
                   label: 'Liên hệ Coach',
@@ -463,7 +421,7 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
                 },
                 {
                   label: 'Đăng ký học bù',
-                  sub: 'Sử dụng buổi học bù',
+                  sub: 'Sử dụng buổi vắng',
                   icon: PlusCircle,
                   iconBg: 'rgba(231,111,81,0.10)',
                   iconColor: '#E76F51',
@@ -488,129 +446,212 @@ export function MemberDashboard({ onNavigate, onNotification }: MemberDashboardP
                   border: 'rgba(14,124,123,0.18)',
                   screen: 'member-course-list',
                 },
-              ].map((action, i) => (
-                <button
-                  key={i}
-                  onClick={() => onNavigate(action.screen)}
-                  className="flex flex-col gap-3 p-4 bg-white rounded-2xl text-left active:scale-95 transition-all"
-                  style={{
-                    border: `1.5px solid ${action.border}`,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-                  }}
-                >
-                  {/* Icon */}
-                  <div
-                    className="flex items-center justify-center rounded-xl"
-                    style={{ width: 40, height: 40, background: action.iconBg }}
+              ].filter(action => {
+                const isStudent = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(action.screen);
+                return !(isStudent && !hasActivePackage);
+              }).map((action, i) => {
+                const isStudent = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(action.screen);
+                const isLocked = isStudent && !hasActivePackage;
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleActionClick(action.screen, action.label)}
+                    className="flex flex-col gap-3 p-4 bg-white rounded-2xl text-left active:scale-95 transition-all relative overflow-hidden"
+                    style={{
+                      border: `1.5px solid ${isLocked ? 'rgba(0,0,0,0.04)' : action.border}`,
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                      opacity: isLocked ? 0.45 : 1,
+                    }}
                   >
-                    <action.icon style={{ width: 18, height: 18, color: action.iconColor }} />
-                  </div>
-                  {/* Label */}
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: '#1F2933', lineHeight: 1.25 }}>
-                      {action.label}
-                    </p>
-                    <p style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500, marginTop: 2 }}>
-                      {action.sub}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                    {/* Icon */}
+                    <div
+                      className="flex items-center justify-center rounded-xl"
+                      style={{ width: 40, height: 40, background: action.iconBg }}
+                    >
+                      <action.icon style={{ width: 18, height: 18, color: action.iconColor }} />
+                    </div>
+                    {/* Label */}
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: '#1F2933', lineHeight: 1.25 }}>
+                        {action.label}
+                      </p>
+                      <p style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500, marginTop: 2 }}>
+                        {action.sub}
+                      </p>
+                    </div>
+
+                    {isLocked && (
+                      <span className="absolute top-2 right-2 bg-gray-100 text-gray-500 rounded text-[8px] font-bold px-1.5 py-0.5">
+                        Khóa
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* ─────────────────────────────────────────
               THỐNG KÊ THÁNG NÀY
           ───────────────────────────────────────── */}
-          <div>
-            <div className="flex items-center justify-between mb-2.5">
-              <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em' }}>
-                THÁNG NÀY
-              </p>
+          {hasActivePackage && (
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em' }}>
+                  THÁNG NÀY
+                </p>
+                <button
+                  onClick={() => handleActionClick('member-attendance-history', 'Lịch sử học')}
+                  className="flex items-center gap-1 active:opacity-60"
+                >
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7C7B' }}>Chi tiết</span>
+                  <ChevronRight style={{ width: 13, height: 13, color: '#0E7C7B' }} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                {MONTHLY_STATS.map((stat, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl px-3 py-3 text-center"
+                    style={{
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <div
+                      className="flex items-center justify-center rounded-xl mx-auto mb-2"
+                      style={{ width: 32, height: 32, background: stat.bg }}
+                    >
+                      <stat.icon style={{ width: 14, height: 14, color: stat.color }} />
+                    </div>
+                    <p className="text-sm font-black text-gray-800 leading-none">
+                      {stat.value}
+                      <span className="text-[10px] font-semibold text-gray-400 ml-0.5">{stat.unit}</span>
+                    </p>
+                    <p className="text-[9px] font-bold text-gray-400 mt-1 leading-tight">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════
+          NOTIFICATION BOTTOM SHEET
+      ════════════════════════════════════════ */}
+      {showNotifications && (
+        <div
+          className="absolute inset-0 z-50 flex flex-col justify-end"
+          style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)' }}
+          onClick={() => setShowNotifications(false)}
+        >
+          <div
+            className="bg-white rounded-t-[32px] overflow-hidden animate-in slide-in-from-bottom duration-300"
+            style={{ maxHeight: '80%', boxShadow: '0 -10px 30px rgba(0,0,0,0.15)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* drag bar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1.5 rounded-full bg-gray-200" />
+            </div>
+
+            <div className="px-5 pb-8">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3 mt-1 mb-4">
+                <h3 className="font-black text-teal-900 text-base">Thông báo của bạn</h3>
+                <span className="text-[10px] font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-lg">
+                  {notifications.length} thông báo
+                </span>
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="py-10 text-center text-gray-400 text-xs font-semibold">
+                  Hộp thư thông báo đang trống.
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                  {notifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      className="p-3.5 rounded-2xl flex gap-3 border border-gray-100"
+                      style={{
+                        background: notif.unread ? 'rgba(14,124,123,0.04)' : 'white',
+                        borderColor: notif.unread ? 'rgba(14,124,123,0.15)' : 'rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      <span className="text-xl mt-0.5">{notif.icon || '🔔'}</span>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-gray-800 leading-normal">
+                          {notif.message}
+                        </p>
+                        <p className="text-[10px] text-gray-400 mt-1 font-semibold">
+                          {notif.time}
+                        </p>
+                      </div>
+                      {notif.unread && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 mt-2" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <button
-                onClick={() => onNavigate('member-attendance-history')}
-                className="flex items-center gap-1 active:opacity-60"
+                onClick={() => setShowNotifications(false)}
+                className="w-full mt-6 bg-teal-700 active:bg-teal-800 text-white font-bold py-3.5 rounded-2xl text-xs active:scale-95 transition-transform"
               >
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7C7B' }}>Chi tiết</span>
-                <ChevronRight style={{ width: 13, height: 13, color: '#0E7C7B' }} />
+                Đóng thông báo
               </button>
             </div>
-
-            {/* 2 × 2 grid */}
-            <div className="grid grid-cols-2 gap-3">
-              {MONTHLY_STATS.map((stat, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl px-4 py-4"
-                  style={{
-                    border: '1px solid rgba(0,0,0,0.06)',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-                  }}
-                >
-                  {/* Icon + value row */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div
-                      className="flex items-center justify-center rounded-xl"
-                      style={{ width: 36, height: 36, background: stat.bg }}
-                    >
-                      <stat.icon style={{ width: 16, height: 16, color: stat.color }} />
-                    </div>
-                    <div className="text-right">
-                      <span style={{ fontSize: 28, fontWeight: 900, color: stat.color, lineHeight: 1, letterSpacing: '-1px' }}>
-                        {stat.value}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: stat.color, opacity: 0.7, marginLeft: 2 }}>
-                        {stat.unit}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Label */}
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', lineHeight: 1.3 }}>
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
+        </div>
+      )}
 
-          {/* ─────────────────────────────────────────
-              Gói học — bottom link
-          ───────────────────────────────────────── */}
-          <button
-            onClick={() => onNavigate('member-package')}
-            className="flex items-center gap-4 w-full bg-white rounded-2xl px-4 py-4 active:scale-95 transition-all"
-            style={{
-              border: '1.5px solid rgba(14,124,123,0.15)',
-              boxShadow: '0 3px 14px rgba(14,124,123,0.08)',
-            }}
+      {/* ════════════════════════════════════════
+          LOCKED ALERT DIALOG
+      ════════════════════════════════════════ */}
+      {lockedAlert && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+          onClick={() => setLockedAlert(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-5 w-full max-w-[320px] shadow-2xl relative space-y-4 text-center"
+            onClick={e => e.stopPropagation()}
           >
-            {/* Icon */}
-            <div
-              className="flex items-center justify-center rounded-xl flex-shrink-0"
-              style={{ width: 44, height: 44, background: 'rgba(14,124,123,0.09)' }}
-            >
-              <BookOpen style={{ width: 20, height: 20, color: '#0E7C7B' }} />
+            <div className="w-12 h-12 bg-red-50 text-red-500 border border-red-100 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle size={22} />
             </div>
-
-            {/* Info */}
-            <div className="flex-1 text-left">
-              <p style={{ fontSize: 14, fontWeight: 800, color: '#1F2933' }}>{MEMBER.packageName}</p>
-              <p style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 500, marginTop: 1 }}>
-                Còn <strong style={{ color: '#0E7C7B' }}>{MEMBER.remaining} buổi</strong> · Xem chi tiết gói học
+            <div>
+              <h3 className="font-extrabold text-gray-800 text-sm">Tính năng bị hạn chế</h3>
+              <p className="text-[11px] text-gray-500 leading-normal mt-2">
+                {lockedAlert}
               </p>
             </div>
-
-            {/* Arrow */}
-            <div
-              className="flex items-center justify-center rounded-xl flex-shrink-0"
-              style={{ width: 32, height: 32, background: 'rgba(14,124,123,0.08)' }}
-            >
-              <ChevronRight style={{ width: 16, height: 16, color: '#0E7C7B' }} />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLockedAlert(null)}
+                className="flex-1 bg-gray-100 active:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-transform"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={() => {
+                  setLockedAlert(null);
+                  onNavigate('member-package');
+                }}
+                className="flex-1 bg-teal-700 active:bg-teal-800 text-white font-bold py-2.5 rounded-xl text-xs transition-transform"
+              >
+                Mua gói học
+              </button>
             </div>
-          </button>
-
-        </div>{/* /px-4 */}
-      </div>{/* /scrollable */}
+          </div>
+        </div>
+      )}
 
     </div>
   );

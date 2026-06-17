@@ -65,7 +65,7 @@ import { MemberDashboard } from './components/MemberDashboard';
 import { MemberProfileScreen } from './components/MemberProfileScreen';
 import { MemberScheduleScreen } from './components/MemberScheduleScreen';
 import { MemberPackageScreen } from './components/MemberPackageScreen';
-import { MemberAttendanceHistoryScreen } from './components/MemberAttendanceHistoryScreen';
+import { MemberCartScreen } from './components/MemberCartScreen';
 import { MemberPaymentHistoryScreen } from './components/MemberPaymentHistoryScreen';
 import { MemberRenewRequestScreen } from './components/MemberRenewRequestScreen';
 import { MemberSessionWarningScreen } from './components/MemberSessionWarningScreen';
@@ -75,6 +75,7 @@ import { MemberCourseMaterialsScreen } from './components/MemberCourseMaterialsS
 import { MemberLearningProgressScreen } from './components/MemberLearningProgressScreen';
 import { MemberTrialRegisterScreen } from './components/MemberTrialRegisterScreen';
 import { MemberBottomNavigation } from './components/MemberBottomNavigation';
+import { MemberCartPopup } from './components/MemberCartPopup';
 import { MemberCourseListScreen } from './components/MemberCourseListScreen';
 import { MemberCourseDetailScreen } from './components/MemberCourseDetailScreen';
 
@@ -251,6 +252,115 @@ export default function App() {
   /* ── Role ── */
   const [role, setRole] = useState<Role>('admin');
 
+  /* ── Member / Student state simulations ── */
+  const [hasActivePackage, setHasActivePackage] = useState(true);
+  const [notifications, setNotifications] = useState([
+    { id: '1', message: 'Hệ thống: Gói học Beginner A (12 buổi) đã được kích hoạt thành công!', time: 'Hôm qua', icon: '🎉', unread: true },
+    { id: '2', message: 'Đã điểm danh: Có mặt buổi học ngày 27/04/2026.', time: '2 ngày trước', icon: '✅', unread: false }
+  ]);
+  const [makeupRequests, setMakeupRequests] = useState([
+    { id: 'req_1', courseName: 'Beginner A', missedDate: '15/05/2026', desiredDate: '20/05/2026', desiredTime: '18:00 – 19:30', note: 'Em xin học bù ca tối', studentName: 'Nguyễn Văn A', status: 'pending' as const }
+  ]);
+
+  /* ── Canteen / Cart Simulation State ── */
+  const [cartItems, setCartItems] = useState<any[]>([
+    {
+      product: { id: 1, name: 'Nước suối Aquafina 500ml', price: 15000, priceStr: '15.000đ', image: '💧', category: 'Đồ uống' },
+      quantity: 2
+    },
+    {
+      product: { id: 3, name: 'Bóng Franklin X-40', price: 45000, priceStr: '45.000đ', image: '🥎', category: 'Dụng cụ' },
+      quantity: 1
+    }
+  ]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartOrdered, setIsCartOrdered] = useState(false);
+  const [purchaseHistory, setPurchaseHistory] = useState<any[]>([
+    { id: 'INV-902', date: '15/06/2026', items: '2 Nước Aquafina, 1 Bóng Franklin', amount: '75.000đ', status: 'Đã nhận hàng' },
+    { id: 'INV-765', date: '10/06/2026', items: '1 Nước điện giải Revive', amount: '20.000đ', status: 'Đã nhận hàng' }
+  ]);
+
+  const handleAddToCart = (product: any) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+  };
+
+  const handleUpdateCartQuantity = (productId: number, change: number) => {
+    setCartItems(prev =>
+      prev
+        .map(item => {
+          if (item.product.id === productId) {
+            const newQty = item.quantity + change;
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+        .filter(item => item.quantity > 0)
+    );
+  };
+
+  const handleRemoveFromCart = (productId: number) => {
+    setCartItems(prev => prev.filter(item => item.product.id !== productId));
+  };
+
+  const handleCheckoutCart = () => {
+    if (cartItems.length === 0) return;
+    const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const itemsDescription = cartItems.map(item => `${item.quantity} ${item.product.name.split(' ')[0]}`).join(', ');
+    
+    const newPurchase = {
+      id: 'INV-' + Math.floor(100 + Math.random() * 900),
+      date: new Date().toLocaleDateString('vi-VN'),
+      items: itemsDescription,
+      amount: total.toLocaleString('vi-VN') + 'đ',
+      status: 'Đã nhận hàng'
+    };
+    
+    setPurchaseHistory(prev => [newPurchase, ...prev]);
+    setIsCartOrdered(true);
+  };
+
+  const handleResetCartOrder = () => {
+    setCartItems([]);
+    setIsCartOrdered(false);
+  };
+
+  const handleApproveMakeupRequest = (requestId: string, approvedDate: string) => {
+    setMakeupRequests(prev => prev.map(req => {
+      if (req.id === requestId) {
+        // Add new notification
+        const newNotif = {
+          id: 'notif_' + Date.now(),
+          message: `HLV đã duyệt yêu cầu học bù của bạn. Buổi học bù chính thức được xếp vào ngày ${approvedDate} (${req.desiredTime}).`,
+          time: 'Vừa xong',
+          icon: '📅',
+          unread: true
+        };
+        setNotifications(n => [newNotif, ...n]);
+        return { ...req, status: 'approved' as const };
+      }
+      return req;
+    }));
+  };
+
+  const handleSubmitMakeupRequest = (newRequest: any) => {
+    setMakeupRequests(prev => [
+      { ...newRequest, status: 'pending' as const },
+      ...prev
+    ]);
+  };
+
+  const handleMarkNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
+
   /* ── Success dialog ── */
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const successCb = useRef<(() => void) | null>(null);
@@ -341,7 +451,7 @@ export default function App() {
   /* ── Member tab screens ── */
   const MEMBER_TAB_SCREENS: Screen[] = [
     'member-dashboard', 'member-schedule', 'member-package',
-    'member-attendance-history', 'member-profile',
+    'member-cart', 'member-profile',
   ];
   const showMemberNav = role === 'member' && MEMBER_TAB_SCREENS.includes(currentScreen);
 
@@ -393,7 +503,11 @@ export default function App() {
 
       case 'dashboard-coach':
         return (
-          <DashboardCoach onNavigate={(s) => navigate(s as Screen)} />
+          <DashboardCoach
+            onNavigate={(s) => navigate(s as Screen)}
+            makeupRequests={makeupRequests}
+            onApproveMakeupRequest={handleApproveMakeupRequest}
+          />
         );
 
       /* ── Attendance ── */
@@ -760,6 +874,13 @@ export default function App() {
           <MemberDashboard
             onNavigate={(s) => navigate(s as Screen)}
             onNotification={() => navigate('member-session-warning')}
+            hasActivePackage={hasActivePackage}
+            setHasActivePackage={setHasActivePackage}
+            notifications={notifications}
+            unreadNotifications={notifications.some(n => n.unread)}
+            onMarkNotificationsAsRead={handleMarkNotificationsAsRead}
+            onOpenCart={() => setIsCartOpen(true)}
+            cartItemsCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
           />
         );
 
@@ -768,6 +889,8 @@ export default function App() {
           <MemberProfileScreen
             onNavigate={(s) => navigate(s as Screen)}
             onLogout={logout}
+            purchaseHistory={purchaseHistory}
+            hasActivePackage={hasActivePackage}
           />
         );
 
@@ -778,11 +901,18 @@ export default function App() {
         return (
           <MemberPackageScreen
             onRenew={() => navigate('member-renew-request')}
+            hasActivePackage={hasActivePackage}
           />
         );
 
-      case 'member-attendance-history':
-        return <MemberAttendanceHistoryScreen onNavigate={(s) => navigate(s as Screen)} />;
+      case 'member-cart':
+        return (
+          <MemberCartScreen
+            onAddToCart={handleAddToCart}
+            onOpenCart={() => setIsCartOpen(true)}
+            cartItemsCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+          />
+        );
 
       case 'member-payment-history':
         return <MemberPaymentHistoryScreen />;
@@ -814,6 +944,7 @@ export default function App() {
         return (
           <MemberMakeupRegisterScreen
             onBack={goBack}
+            onSubmitMakeupRequest={handleSubmitMakeupRequest}
           />
         );
 
@@ -913,8 +1044,23 @@ export default function App() {
             <MemberBottomNavigation
               currentTab={memberTabActive}
               onTabChange={(tab) => switchTab(tab as Screen)}
+              hasUnreadNotifications={notifications.some(n => n.unread)}
+              hasActivePackage={hasActivePackage}
             />
           )}
+
+          {/* ── Member Cart Popup ── */}
+          <MemberCartPopup
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateCartQuantity}
+            onRemove={handleRemoveFromCart}
+            onCheckout={handleCheckoutCart}
+            isOrdered={isCartOrdered}
+            onResetOrder={handleResetCartOrder}
+            purchaseHistory={purchaseHistory}
+          />
 
           {/* ── Success overlay ── */}
           {successMsg && (

@@ -1,36 +1,36 @@
 /**
  * MemberScheduleScreen — VNS PickleTrack
- * Lịch học của tôi · Read-only · Học viên / Hội viên
+ * Lịch học & Lịch sử tham gia · Hội viên / Học viên
  * Android 390 × 844
  */
 import { useState } from 'react';
 import {
   ChevronLeft, ChevronRight, Clock, MapPin,
-  User, Calendar, CheckCircle2, PauseCircle,
-  MinusCircle, Zap, BookOpen
+  User, Calendar, CheckCircle2, MinusCircle, Zap, BookOpen,
+  XCircle, Filter, TrendingUp, AlertCircle
 } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════
    DATA TYPES
-══════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════ */
 type SessionStatus = 'upcoming' | 'next' | 'present' | 'leave' | 'late' | 'absent' | 'makeup';
 
 interface Session {
   id:        number;
-  isoDate:   string;      // YYYY-MM-DD  (for sorting)
+  isoDate:   string;      // YYYY-MM-DD
   dayLabel:  string;      // Thứ Tư
   dateStr:   string;      // 29/04/2026
-  dayNum:    number;      // 29
-  month:     number;      // 4
+  dayNum:    number;
+  month:     number;
   timeStart: string;
   timeEnd:   string;
   class:     string;
   coach:     string;
   court:     string;
   status:    SessionStatus;
+  note?:     string;
 }
 
-/* ── Week strip days (Mon 27/04 → Sun 03/05) ───── */
 interface WeekDay {
   dayNum:   number;
   dayShort: string;
@@ -41,8 +41,8 @@ interface WeekDay {
 }
 
 /* ══════════════════════════════════════════════════════
-   MOCK DATA  — "today" = 29/04/2026
-══════════════════════════════════════════════════════ */
+   MOCK DATA
+   ══════════════════════════════════════════════════════ */
 const CLASS_INFO = {
   name:  'Beginner A',
   coach: 'Coach Nam',
@@ -51,7 +51,7 @@ const CLASS_INFO = {
 };
 
 const ALL_SESSIONS: Session[] = [
-  /* ── Upcoming ───────────────────────────────── */
+  /* ── Upcoming ── */
   {
     id: 1,
     isoDate:  '2026-04-29',
@@ -60,7 +60,7 @@ const ALL_SESSIONS: Session[] = [
     dayNum:   29, month: 4,
     timeStart:'18:00', timeEnd:'19:30',
     class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
-    status: 'next',     // ← closest upcoming (hôm nay)
+    status: 'next',
   },
   {
     id: 2,
@@ -82,7 +82,7 @@ const ALL_SESSIONS: Session[] = [
     class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
     status: 'upcoming',
   },
-  /* ── Past ───────────────────────────────────── */
+  /* ── Past ── */
   {
     id: 4,
     isoDate:  '2026-04-27',
@@ -92,6 +92,7 @@ const ALL_SESSIONS: Session[] = [
     timeStart:'18:00', timeEnd:'19:30',
     class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
     status: 'present',
+    note: 'Đã điểm danh',
   },
   {
     id: 5,
@@ -102,6 +103,7 @@ const ALL_SESSIONS: Session[] = [
     timeStart:'18:00', timeEnd:'19:30',
     class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
     status: 'leave',
+    note: 'Có phép trước',
   },
   {
     id: 6,
@@ -112,10 +114,52 @@ const ALL_SESSIONS: Session[] = [
     timeStart:'18:00', timeEnd:'19:30',
     class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
     status: 'late',
+    note: 'Đi muộn 15p',
+  },
+  {
+    id: 7,
+    isoDate:  '2026-04-20',
+    dayLabel: 'Thứ Hai',
+    dateStr:  '20/04/2026',
+    dayNum:   20, month: 4,
+    timeStart:'18:00', timeEnd:'19:30',
+    class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
+    status: 'present',
+  },
+  {
+    id: 8,
+    isoDate:  '2026-03-30',
+    dayLabel: 'Thứ Hai',
+    dateStr:  '30/03/2026',
+    dayNum:   30, month: 3,
+    timeStart:'18:00', timeEnd:'19:30',
+    class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
+    status: 'present',
+  },
+  {
+    id: 9,
+    isoDate:  '2026-03-27',
+    dayLabel: 'Thứ Sáu',
+    dateStr:  '27/03/2026',
+    dayNum:   27, month: 3,
+    timeStart:'18:00', timeEnd:'19:30',
+    class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
+    status: 'absent',
+    note: 'Nghỉ không phép',
+  },
+  {
+    id: 10,
+    isoDate:  '2026-03-25',
+    dayLabel: 'Thứ Tư',
+    dateStr:  '25/03/2026',
+    dayNum:   25, month: 3,
+    timeStart:'18:00', timeEnd:'19:30',
+    class: CLASS_INFO.name, coach: CLASS_INFO.coach, court: CLASS_INFO.court,
+    status: 'makeup',
+    note: 'Học bù buổi vắng 20/03',
   },
 ];
 
-/* ── Week strip: Mon 27/04 – Sun 03/05 ────────── */
 const WEEK_DAYS: WeekDay[] = [
   { dayNum:27, dayShort:'T2', monthNum:4,  isToday:false, hasSession:true,  status:'present'  },
   { dayNum:28, dayShort:'T3', monthNum:4,  isToday:false, hasSession:false                    },
@@ -126,36 +170,36 @@ const WEEK_DAYS: WeekDay[] = [
   { dayNum:3,  dayShort:'CN', monthNum:5,  isToday:false, hasSession:false                    },
 ];
 
-const SESSION_WEEK_COUNT = 3;   // 27/04 + 29/04 + 01/05
+const SESSION_WEEK_COUNT = 3;
 const NEXT_SESSION_LABEL = 'Thứ Tư, 18:00';
 
-/* ══════════════════════════════════════════════════════
-   STATUS CONFIG
-══════════════════════════════════════════════════════ */
+const MONTHS = [
+  { label: 'Tháng 03/2026', key: 'mar', num: 3 },
+  { label: 'Tháng 04/2026', key: 'apr', num: 4 },
+  { label: 'Tháng 05/2026', key: 'may', num: 5 },
+];
+
 const STATUS_CFG: Record<SessionStatus, {
   label: string; color: string; bg: string; border: string;
   Icon:  React.FC<{ style?: React.CSSProperties }>;
 }> = {
   next:     { label:'Sắp tới',   color:'#0E7C7B', bg:'rgba(14,124,123,0.12)',  border:'rgba(14,124,123,0.28)',  Icon: Zap           },
   upcoming: { label:'Sắp tới',   color:'#6B7280', bg:'rgba(107,114,128,0.09)', border:'rgba(107,114,128,0.22)', Icon: Calendar      },
-  present:  { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
-  leave:    { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)', border:'rgba(107,114,128,0.28)', Icon: MinusCircle   },
-  late:     { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
-  absent:   { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)', border:'rgba(107,114,128,0.28)', Icon: MinusCircle   },
-  makeup:   { label:'Học bù', color:'#EF4444', bg:'rgba(239,68,68,0.12)', border:'rgba(239,68,68,0.28)', Icon: BookOpen },
+  present:  { label:'Có mặt',    color:'#2A9D8F', bg:'rgba(42,157,143,0.12)',  border:'rgba(42,157,143,0.26)',  Icon: CheckCircle2  },
+  leave:    { label:'Nghỉ phép', color:'#E9C46A', bg:'rgba(233,196,106,0.12)', border:'rgba(233,196,106,0.28)', Icon: MinusCircle   },
+  late:     { label:'Trễ',       color:'#E76F51', bg:'rgba(231,111,81,0.12)',  border:'rgba(231,111,81,0.26)',  Icon: CheckCircle2  },
+  absent:   { label:'Vắng',      color:'#EF4444', bg:'rgba(239,68,68,0.12)', border:'rgba(239,68,68,0.28)', Icon: XCircle   },
+  makeup:   { label:'Học bù',    color:'#815AD5', bg:'rgba(129,90,213,0.12)', border:'rgba(129,90,213,0.28)', Icon: BookOpen },
 };
 
 /* ══════════════════════════════════════════════════════
    SUB-COMPONENTS
-══════════════════════════════════════════════════════ */
-
-/** Week day cell */
+   ══════════════════════════════════════════════════════ */
 function WeekDayCell({ day }: { day: WeekDay }) {
   const isSession = day.hasSession;
   const isToday   = day.isToday;
   const isPast    = !isToday && day.status && ['present','leave','late','absent'].includes(day.status ?? '');
 
-  /* dot color */
   let dotColor = 'transparent';
   if (isSession) {
     if (isToday)            dotColor = 'white';
@@ -165,57 +209,27 @@ function WeekDayCell({ day }: { day: WeekDay }) {
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      {/* Day label */}
-      <span
-        style={{
-          fontSize:   10,
-          fontWeight: isToday ? 800 : 600,
-          color:      isToday ? 'white' : 'rgba(255,255,255,0.45)',
-          letterSpacing: '0.02em',
-        }}
-      >
+      <span style={{ fontSize: 10, fontWeight: isToday ? 800 : 600, color: isToday ? 'white' : 'rgba(255,255,255,0.45)' }}>
         {day.dayShort}
       </span>
-
-      {/* Day number circle */}
       <div
         className="flex items-center justify-center rounded-2xl transition-all"
         style={{
           width:    isToday ? 38 : 34,
           height:   isToday ? 38 : 34,
-          background: isToday
-            ? 'rgba(255,255,255,0.22)'
-            : 'transparent',
+          background: isToday ? 'rgba(255,255,255,0.22)' : 'transparent',
           border:   isToday ? '2px solid rgba(255,255,255,0.45)' : '2px solid transparent',
-          boxShadow: isToday ? '0 4px 14px rgba(0,0,0,0.18)' : 'none',
         }}
       >
-        <span
-          style={{
-            fontSize:   isToday ? 16 : 14,
-            fontWeight: isToday ? 900 : isSession ? 700 : 500,
-            color:      isToday ? 'white' : isSession ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)',
-          }}
-        >
+        <span style={{ fontSize: isToday ? 16 : 14, fontWeight: isToday ? 900 : isSession ? 700 : 500, color: isToday ? 'white' : isSession ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)' }}>
           {day.dayNum}
         </span>
       </div>
-
-      {/* Session dot */}
-      <div
-        className="rounded-full transition-all"
-        style={{
-          width:      isToday ? 6 : 5,
-          height:     isToday ? 6 : 5,
-          background: dotColor,
-          opacity:    isSession ? 1 : 0,
-        }}
-      />
+      <div className="rounded-full w-1 h-1" style={{ background: dotColor, opacity: isSession ? 1 : 0 }} />
     </div>
   );
 }
 
-/** Session card */
 function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (screen: string) => void }) {
   const cfg    = STATUS_CFG[session.status];
   const isNext = session.status === 'next';
@@ -225,53 +239,28 @@ function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (
     <div
       className="bg-white rounded-3xl overflow-hidden transition-all"
       style={{
-        border:    `1.5px solid ${isNext ? 'rgba(14,124,123,0.22)' : isPast ? 'rgba(0,0,0,0.07)' : 'rgba(0,0,0,0.07)'}`,
+        border:    `1.5px solid ${isNext ? 'rgba(14,124,123,0.22)' : 'rgba(0,0,0,0.06)'}`,
         boxShadow: isNext ? '0 6px 24px rgba(14,124,123,0.12)' : '0 2px 10px rgba(0,0,0,0.05)',
-        opacity:   isPast ? 0.88 : 1,
       }}
     >
-      {/* Top accent for "next" */}
-      {isNext && (
-        <div style={{ height: 3, background: 'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />
-      )}
-
+      {isNext && <div style={{ height: 3, background: 'linear-gradient(90deg,#0E7C7B 0%,#2A9D8F 100%)' }} />}
       <div className="flex items-stretch gap-0 px-4 py-4">
         {/* Date pillar */}
-        <div className="flex flex-col items-center justify-center pr-4 mr-4 flex-shrink-0"
-             style={{ borderRight: '1px solid rgba(0,0,0,0.07)', minWidth: 52 }}>
+        <div className="flex flex-col items-center justify-center pr-4 mr-4 flex-shrink-0" style={{ borderRight: '1px solid rgba(0,0,0,0.07)', minWidth: 52 }}>
           <div
             className="flex flex-col items-center justify-center rounded-2xl"
             style={{
               width: 52, height: 58,
-              background: isNext
-                ? 'linear-gradient(145deg,#0E7C7B,#2A9D8F)'
-                : isPast
-                ? 'rgba(0,0,0,0.06)'
-                : 'rgba(14,124,123,0.08)',
-              boxShadow: isNext ? '0 6px 16px rgba(14,124,123,0.30)' : 'none',
+              background: isNext ? 'linear-gradient(145deg,#0E7C7B,#2A9D8F)' : 'rgba(0,0,0,0.06)',
             }}
           >
-            <span style={{
-              fontSize:   10,
-              fontWeight: 700,
-              color:      isNext ? 'rgba(255,255,255,0.7)' : '#9CA3AF',
-              letterSpacing: '0.02em',
-            }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: isNext ? 'white' : '#9CA3AF' }}>
               {session.dayLabel.replace('Thứ ','')}
             </span>
-            <span style={{
-              fontSize:   24,
-              fontWeight: 900,
-              lineHeight: 1.1,
-              color:      isNext ? 'white' : isPast ? '#9CA3AF' : '#0E7C7B',
-            }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: isNext ? 'white' : '#9CA3AF' }}>
               {session.dayNum}
             </span>
-            <span style={{
-              fontSize:  9,
-              fontWeight: 600,
-              color:     isNext ? 'rgba(255,255,255,0.6)' : '#BBBFC6',
-            }}>
+            <span style={{ fontSize: 9, fontWeight: 600, color: isNext ? 'rgba(255,255,255,0.7)' : '#BBBFC6' }}>
               Th.{session.month}
             </span>
           </div>
@@ -279,72 +268,39 @@ function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          {/* Day name + badge */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-2 min-w-0">
-              <span style={{
-                fontSize:   15,
-                fontWeight: 900,
-                color:      isPast ? '#6B7280' : '#1F2933',
-                whiteSpace: 'nowrap',
-              }}>
-                {session.dayLabel}
-              </span>
-              {isNext && (
-                <span
-                  className="px-2 py-0.5 rounded-lg flex-shrink-0"
-                  style={{ fontSize:9, fontWeight:800, background:'rgba(14,124,123,0.1)', color:'#0E7C7B' }}
-                >
-                  HÔM NAY
-                </span>
-              )}
-            </div>
-
-            {/* Status badge */}
-            <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl flex-shrink-0"
-              style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
-            >
-              <cfg.Icon style={{ width: 11, height: 11, color: cfg.color }} />
-              <span style={{ fontSize:10, fontWeight:800, color: cfg.color }}>{cfg.label}</span>
+            <span className="font-bold text-sm text-gray-800 truncate">{session.dayLabel}</span>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border" style={{ background: cfg.bg, borderColor: cfg.border }}>
+              <cfg.Icon className="w-3 h-3" style={{ color: cfg.color }} />
+              <span className="text-[9px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
             </div>
           </div>
 
-          {/* Date + time */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <Clock style={{ width:12, height:12, color: isPast ? '#BBBFC6' : '#6B7280' }} />
-            <span style={{ fontSize:13, fontWeight:700, color: isPast ? '#9CA3AF' : '#374151' }}>
-              {session.timeStart} – {session.timeEnd}
-            </span>
-            <span style={{ fontSize:11, color:'#D1D5DB' }}>·</span>
-            <span style={{ fontSize:12, color: isPast ? '#BBBFC6' : '#6B7280', fontWeight:500 }}>
-              {session.dateStr}
-            </span>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="font-bold">{session.timeStart} – {session.timeEnd}</span>
+            <span>·</span>
+            <span>{session.dateStr}</span>
           </div>
 
-          {/* Court + Coach */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <MapPin style={{ width:11, height:11, color:'#C4C9D4' }} />
-              <span style={{ fontSize:11, color: isPast ? '#C4C9D4' : '#9CA3AF', fontWeight:600 }}>
-                {session.court}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <User style={{ width:11, height:11, color:'#C4C9D4' }} />
-              <span style={{ fontSize:11, color: isPast ? '#C4C9D4' : '#9CA3AF', fontWeight:600 }}>
-                {session.coach} {session.status === 'makeup' && ' (HLV sắp xếp)'}
-              </span>
-            </div>
+          <div className="flex items-center gap-3 text-[11px] text-gray-400">
+            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {session.court}</span>
+            <span className="flex items-center gap-1"><User className="w-3 h-3" /> {session.coach}</span>
           </div>
+
+          {session.note && (
+            <div className="mt-2 bg-gray-50 border border-gray-100 px-2 py-1 rounded-lg text-[10px] text-gray-500 italic">
+              {session.note}
+            </div>
+          )}
 
           {(session.status === 'leave' || session.status === 'absent') && (
             <div className="mt-2.5 flex justify-end">
               <button
                 onClick={() => onNavigate?.('member-makeup-register')}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#0E7C7B] hover:bg-[#0A5F5E] active:scale-95 transition-transform flex items-center gap-1 shadow-sm"
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-teal-700 active:bg-teal-800 active:scale-95 transition-transform flex items-center gap-1"
               >
-                <BookOpen style={{ width: 12, height: 12 }} />
+                <BookOpen className="w-3.5 h-3.5" />
                 Xin học bù
               </button>
             </div>
@@ -357,224 +313,258 @@ function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (
 
 /* ══════════════════════════════════════════════════════
    MAIN COMPONENT
-══════════════════════════════════════════════════════ */
-const MONTHS = [
-  { label: 'Tháng 03/2026', key: 'mar' },
-  { label: 'Tháng 04/2026', key: 'apr' },
-  { label: 'Tháng 05/2026', key: 'may' },
-];
-
+   ══════════════════════════════════════════════════════ */
 export function MemberScheduleScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
-  const [monthIdx, setMonthIdx] = useState(1);   // default = Tháng 04/2026
+  const [activeSegment, setActiveSegment] = useState<'upcoming' | 'history'>('upcoming');
+  const [monthIdx, setMonthIdx] = useState(1); // default = Tháng 04/2026
 
-  const upcoming  = ALL_SESSIONS.filter(s => ['next','upcoming'].includes(s.status));
-  const past      = ALL_SESSIONS.filter(s => ['present','leave','late','absent','makeup'].includes(s.status));
+  const monthNum = MONTHS[monthIdx].num;
+
+  // upcoming list
+  const upcomingList = ALL_SESSIONS.filter(s => ['next', 'upcoming'].includes(s.status));
+
+  // history list (filtered by month)
+  const historyList = ALL_SESSIONS.filter(s =>
+    ['present', 'leave', 'late', 'absent', 'makeup'].includes(s.status) && s.month === monthNum
+  );
+
+  // filters for history tab
+  type FilterKey = 'all' | 'present' | 'nghi' | 'makeup';
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+
+  const presentCount = historyList.filter(s => ['present', 'late'].includes(s.status)).length;
+  const absentCount = historyList.filter(s => s.status === 'absent').length;
+  const leaveCount = historyList.filter(s => s.status === 'leave').length;
+  const makeupCount = historyList.filter(s => s.status === 'makeup').length;
+
+  const filteredHistory = activeFilter === 'all'
+    ? historyList
+    : activeFilter === 'present'
+    ? historyList.filter(s => ['present', 'late'].includes(s.status))
+    : activeFilter === 'makeup'
+    ? historyList.filter(s => s.status === 'makeup')
+    : historyList.filter(s => s.status === 'absent' || s.status === 'leave');
+
+  const attendanceRate = historyList.length > 0
+    ? Math.round(((presentCount + makeupCount) / historyList.length) * 100)
+    : 0;
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#F0F4F5' }}>
-
-      {/* ════════════════════════════════════════
-          HEADER  (gradient + week strip)
-      ════════════════════════════════════════ */}
+      {/* HEADER */}
       <div
         className="relative overflow-hidden flex-shrink-0"
-        style={{ background:'linear-gradient(148deg,#032C2C 0%,#053E3E 28%,#075E5D 58%,#0E7C7B 82%,#1A8E87 100%)' }}
+        style={{ background: 'linear-gradient(148deg,#032C2C 0%,#053E3E 28%,#075E5D 58%,#0E7C7B 82%,#1A8E87 100%)' }}
       >
-        {/* decorative circles */}
-        <div className="absolute pointer-events-none" style={{ top:-40,right:-30,width:170,height:170,borderRadius:'50%',background:'rgba(255,255,255,0.042)' }} />
-        <div className="absolute pointer-events-none" style={{ top:14, right:50, width:80, height:80, borderRadius:'50%',background:'rgba(255,255,255,0.028)' }} />
-        <div className="absolute pointer-events-none" style={{ bottom:-18,left:-14,width:120,height:120,borderRadius:'50%',background:'rgba(42,157,143,0.09)' }} />
+        <div className="absolute pointer-events-none" style={{ top: -40, right: -30, width: 170, height: 170, borderRadius: '50%', background: 'rgba(255,255,255,0.042)' }} />
+        <div className="absolute pointer-events-none" style={{ bottom: -18, left: -14, width: 120, height: 120, borderRadius: '50%', background: 'rgba(42,157,143,0.09)' }} />
 
-        {/* Title row */}
-        <div className="relative px-5 pt-14 pb-3">
-          <p style={{ fontSize:11, color:'rgba(255,255,255,0.48)', fontWeight:700, letterSpacing:'0.06em' }}>
-            LỊCH HỌC
+        <div className="relative px-5 pt-14 pb-4">
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.48)', fontWeight: 700, letterSpacing: '0.06em' }}>
+            HỘI VIÊN
           </p>
-          <h1 style={{ fontSize:24, fontWeight:900, color:'white', letterSpacing:'-0.5px', marginBottom:6 }}>
-            Lịch học của tôi
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: '-0.5px', marginBottom: 6 }}>
+            {activeSegment === 'upcoming' ? 'Lịch học của tôi' : 'Lịch sử tham gia'}
           </h1>
 
-          {/* Month selector */}
-          <div
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl"
-            style={{ background:'rgba(255,255,255,0.13)', border:'1.5px solid rgba(255,255,255,0.20)' }}
-          >
+          {/* Segment controls */}
+          <div className="flex bg-black/20 rounded-xl p-1 mb-3">
             <button
-              onClick={() => setMonthIdx(i => Math.max(0, i - 1))}
-              disabled={monthIdx <= 0}
-              className="disabled:opacity-30 active:scale-90 transition-transform"
+              onClick={() => setActiveSegment('upcoming')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                activeSegment === 'upcoming' ? 'bg-white text-teal-900 shadow' : 'text-white/75 hover:text-white'
+              }`}
             >
-              <ChevronLeft style={{ width:15, height:15, color:'rgba(255,255,255,0.8)' }} />
+              Lịch học sắp tới
             </button>
-            <span style={{ fontSize:13, fontWeight:800, color:'white', letterSpacing:'0.02em', minWidth:108, textAlign:'center' }}>
-              {MONTHS[monthIdx].label}
-            </span>
             <button
-              onClick={() => setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1))}
-              disabled={monthIdx >= MONTHS.length - 1}
-              className="disabled:opacity-30 active:scale-90 transition-transform"
+              onClick={() => setActiveSegment('history')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                activeSegment === 'history' ? 'bg-white text-teal-900 shadow' : 'text-white/75 hover:text-white'
+              }`}
             >
-              <ChevronRight style={{ width:15, height:15, color:'rgba(255,255,255,0.8)' }} />
+              Lịch sử điểm danh
             </button>
           </div>
-        </div>
 
-        {/* ── Week strip calendar ── */}
-        <div className="relative px-4 pb-2 pt-3">
-          {/* Week label */}
-          <p style={{ fontSize:9, color:'rgba(255,255,255,0.40)', fontWeight:700, letterSpacing:'0.07em', marginBottom:6 }}>
-            TUẦN NÀY  ·  27 Th4 – 3 Th5
-          </p>
-          <div className="flex items-start justify-between">
-            {WEEK_DAYS.map((day, i) => (
-              <WeekDayCell key={i} day={day} />
-            ))}
-          </div>
-        </div>
-
-        {/* ── Summary banner ── */}
-        <div
-          className="mx-4 mb-4 mt-3 flex items-center gap-0 rounded-2xl overflow-hidden"
-          style={{ background:'rgba(255,255,255,0.12)', border:'1.5px solid rgba(255,255,255,0.18)' }}
-        >
-          {/* Left cell */}
-          <div className="flex-1 flex flex-col items-center justify-center py-3.5 px-3"
-               style={{ borderRight:'1px solid rgba(255,255,255,0.15)' }}>
-            <span style={{ fontSize:28, fontWeight:900, color:'white', lineHeight:1, letterSpacing:'-1px' }}>
-              {SESSION_WEEK_COUNT}
-            </span>
-            <span style={{ fontSize:10, color:'rgba(255,255,255,0.55)', fontWeight:600, marginTop:2, textAlign:'center' }}>
-              buổi trong tuần này
-            </span>
-          </div>
-          {/* Right cell */}
-          <div className="flex-1 flex flex-col items-center justify-center py-3.5 px-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Zap style={{ width:13, height:13, color:'rgba(255,255,255,0.7)' }} />
-              <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)', fontWeight:700 }}>Buổi kế tiếp</span>
+          {/* Selector dynamically shown based on tab */}
+          {activeSegment === 'upcoming' ? (
+            <div className="relative pb-2 pt-2">
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.40)', fontWeight: 700, letterSpacing: '0.07em', marginBottom: 6 }}>
+                TUẦN NÀY · 27 Th4 – 3 Th5
+              </p>
+              <div className="flex items-start justify-between">
+                {WEEK_DAYS.map((day, i) => (
+                  <WeekDayCell key={i} day={day} />
+                ))}
+              </div>
             </div>
-            <span style={{ fontSize:15, fontWeight:900, color:'white', letterSpacing:'0.01em' }}>
-              {NEXT_SESSION_LABEL}
-            </span>
-            <span style={{ fontSize:10, color:'rgba(255,255,255,0.45)', fontWeight:600, marginTop:1 }}>
-              Thứ Tư, 29/04/2026
-            </span>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-white/75 font-semibold">Chọn bộ lọc tháng:</span>
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.13)', border: '1px solid rgba(255,255,255,0.2)' }}
+              >
+                <button
+                  onClick={() => { setMonthIdx(i => Math.max(0, i - 1)); setUnusedFilter(); }}
+                  disabled={monthIdx <= 0}
+                  className="disabled:opacity-30 active:scale-90 transition-transform"
+                >
+                  <ChevronLeft className="w-4 h-4 text-white" />
+                </button>
+                <span className="text-xs font-extrabold text-white min-w-[96px] text-center">
+                  {MONTHS[monthIdx].label}
+                </span>
+                <button
+                  onClick={() => { setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1)); setUnusedFilter(); }}
+                  disabled={monthIdx >= MONTHS.length - 1}
+                  className="disabled:opacity-30 active:scale-90 transition-transform"
+                >
+                  <ChevronRight className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ════════════════════════════════════════
-          SCROLLABLE BODY
-      ════════════════════════════════════════ */}
+      {/* BODY */}
       <div className="flex-1 overflow-y-auto pb-28">
-
-        {/* ── UPCOMING SESSIONS ── */}
-        <div className="px-4 pt-4">
-          {/* Section header */}
-          <div className="flex items-center gap-2.5 mb-3">
+        {activeSegment === 'upcoming' ? (
+          /* ========================================================
+             UPCOMING CONTENT
+             ======================================================== */
+          <div className="px-4 pt-4 space-y-4">
+            {/* Summary Banner */}
             <div
-              className="flex items-center justify-center rounded-xl"
-              style={{ width:28, height:28, background:'rgba(14,124,123,0.10)' }}
+              className="flex items-center gap-0 rounded-2xl overflow-hidden"
+              style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
             >
-              <Zap style={{ width:13, height:13, color:'#0E7C7B' }} />
-            </div>
-            <p style={{ fontSize:12, fontWeight:900, color:'#1F2933', letterSpacing:'0.04em' }}>
-              SẮP TỚI
-            </p>
-            <div
-              className="flex items-center justify-center rounded-lg"
-              style={{ width:22, height:22, background:'rgba(14,124,123,0.10)' }}
-            >
-              <span style={{ fontSize:11, fontWeight:900, color:'#0E7C7B' }}>{upcoming.length}</span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {upcoming.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
-          </div>
-        </div>
-
-        {/* ── DIVIDER ── */}
-        <div className="flex items-center gap-3 px-5 my-5">
-          <div className="flex-1 h-px" style={{ background:'rgba(0,0,0,0.08)' }} />
-          <span style={{ fontSize:10, color:'#C4C9D4', fontWeight:700, letterSpacing:'0.05em' }}>ĐÃ QUA</span>
-          <div className="flex-1 h-px" style={{ background:'rgba(0,0,0,0.08)' }} />
-        </div>
-
-        {/* ── PAST SESSIONS ── */}
-        <div className="px-4">
-          {/* Section header */}
-          <div className="flex items-center gap-2.5 mb-3">
-            <div
-              className="flex items-center justify-center rounded-xl"
-              style={{ width:28, height:28, background:'rgba(0,0,0,0.06)' }}
-            >
-              <CheckCircle2 style={{ width:13, height:13, color:'#9CA3AF' }} />
-            </div>
-            <p style={{ fontSize:12, fontWeight:900, color:'#6B7280', letterSpacing:'0.04em' }}>
-              ĐÃ QUA
-            </p>
-            <div
-              className="flex items-center justify-center rounded-lg"
-              style={{ width:22, height:22, background:'rgba(0,0,0,0.06)' }}
-            >
-              <span style={{ fontSize:11, fontWeight:900, color:'#9CA3AF' }}>{past.length}</span>
-            </div>
-          </div>
-
-          {/* Past legend */}
-          <div className="flex items-center flex-wrap gap-3 mb-3 px-1">
-            {[
-              { label:'Đã điểm danh', color:'#2A9D8F', bg:'rgba(42,157,143,0.12)'  },
-              { label:'Nghỉ', color:'#6B7280', bg:'rgba(107,114,128,0.12)' },
-              { label:'Học bù', color:'#EF4444', bg:'rgba(239,68,68,0.12)' },
-            ].map((leg, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: leg.color }} />
-                <span style={{ fontSize:10, color:'#9CA3AF', fontWeight:600 }}>{leg.label}</span>
+              <div className="flex-1 flex flex-col items-center justify-center py-3.5 px-3 border-r border-gray-100">
+                <span style={{ fontSize: 24, fontWeight: 900, color: '#0E7C7B', lineHeight: 1 }}>
+                  {SESSION_WEEK_COUNT}
+                </span>
+                <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, marginTop: 2, textAlign: 'center' }}>
+                  buổi học tuần này
+                </span>
               </div>
-            ))}
-          </div>
+              <div className="flex-1 flex flex-col items-center justify-center py-3.5 px-3">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <Zap className="w-3.5 h-3.5 text-teal-600" />
+                  <span className="text-[10px] text-teal-700 font-extrabold">Buổi kế tiếp</span>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 900, color: '#1F2933' }}>
+                  {NEXT_SESSION_LABEL}
+                </span>
+                <span className="text-[9px] text-gray-400 mt-0.5">Thứ Tư, 29/04/2026</span>
+              </div>
+            </div>
 
-          <div className="space-y-3">
-            {past.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
-          </div>
-        </div>
+            {/* List */}
+            <div className="space-y-3">
+              {upcomingList.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
+            </div>
 
-        {/* ── Class info footer ── */}
-        <div className="px-4 mt-5">
-          <div
-            className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
-            style={{ background:'rgba(14,124,123,0.07)', border:'1.5px solid rgba(14,124,123,0.14)' }}
-          >
+            {/* Footer */}
             <div
-              className="flex items-center justify-center rounded-xl flex-shrink-0"
-              style={{ width:36, height:36, background:'rgba(14,124,123,0.12)' }}
+              className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
+              style={{ background: 'rgba(14,124,123,0.07)', border: '1.5px solid rgba(14,124,123,0.14)' }}
             >
-              <BookOpen style={{ width:16, height:16, color:'#0E7C7B' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p style={{ fontSize:13, fontWeight:800, color:'#0E7C7B' }}>{CLASS_INFO.name}</p>
-              <p style={{ fontSize:11, color:'#6B7280', fontWeight:500, marginTop:1 }}>
-                {CLASS_INFO.coach} · {CLASS_INFO.court} · {CLASS_INFO.time}
-              </p>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full" style={{ background:'#2A9D8F' }} />
-              <span style={{ fontSize:10, fontWeight:700, color:'#2A9D8F' }}>Đang học</span>
+              <div className="flex items-center justify-center rounded-xl flex-shrink-0 w-9 h-9 bg-teal-100">
+                <BookOpen className="w-4 h-4 text-teal-800" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p style={{ fontSize: 13, fontWeight: 800, color: '#0E7C7B' }}>{CLASS_INFO.name}</p>
+                <p style={{ fontSize: 11, color: '#6B7280', fontWeight: 500, marginTop: 1 }}>
+                  {CLASS_INFO.coach} · {CLASS_INFO.court} · {CLASS_INFO.time}
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-md">Đang học</span>
             </div>
           </div>
-        </div>
+        ) : (
+          /* ========================================================
+             HISTORY CONTENT
+             ======================================================== */
+          <div className="px-4 pt-4 space-y-4">
+            {/* Stats Summary */}
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-white rounded-xl p-2.5 border border-teal-50 text-center flex flex-col justify-between">
+                <span className="text-lg font-black text-teal-800">{presentCount}</span>
+                <span className="text-[9px] font-bold text-gray-500">Có mặt</span>
+              </div>
+              <div className="bg-white rounded-xl p-2.5 border border-teal-50 text-center flex flex-col justify-between">
+                <span className="text-lg font-black text-amber-500">{leaveCount}</span>
+                <span className="text-[9px] font-bold text-gray-500">Nghỉ phép</span>
+              </div>
+              <div className="bg-white rounded-xl p-2.5 border border-teal-50 text-center flex flex-col justify-between">
+                <span className="text-lg font-black text-red-500">{absentCount}</span>
+                <span className="text-[9px] font-bold text-gray-500">Vắng</span>
+              </div>
+              <div className="bg-white rounded-xl p-2.5 border border-teal-50 text-center flex flex-col justify-between">
+                <span className="text-lg font-black text-purple-700">{makeupCount}</span>
+                <span className="text-[9px] font-bold text-gray-500">Học bù</span>
+              </div>
+            </div>
 
-        {/* Read-only notice */}
-        <p
-          className="text-center mt-4 mb-2 px-6"
-          style={{ fontSize:10, color:'#C4C9D4', fontWeight:500, lineHeight:1.6 }}
-        >
-          Lịch học do Coach cập nhật. Nếu có thay đổi, vui lòng liên hệ Coach hoặc Admin.
+            {/* Attendance rate banner */}
+            <div className="bg-white rounded-2xl p-3 shadow-sm flex items-center justify-between border border-teal-100/30">
+              <div className="flex items-center gap-2">
+                <div className="bg-teal-50 p-2 rounded-xl text-teal-800">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-gray-700">Tỷ lệ chuyên cần</h4>
+                  <p className="text-[10px] text-gray-400">Có mặt + Học bù trên tổng số buổi</p>
+                </div>
+              </div>
+              <span className="text-lg font-black text-teal-700">{attendanceRate}%</span>
+            </div>
+
+            {/* Filters */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5">
+              {[
+                { key: 'all', label: 'Tất cả' },
+                { key: 'present', label: 'Đã học' },
+                { key: 'makeup', label: 'Học bù' },
+                { key: 'nghi', label: 'Nghỉ' },
+              ].map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setActiveFilter(f.key as FilterKey)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                    activeFilter === f.key
+                      ? 'bg-teal-700 text-white shadow-sm'
+                      : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* List */}
+            {filteredHistory.length === 0 ? (
+              <div className="bg-white rounded-2xl py-8 px-4 text-center text-gray-400 text-xs shadow-sm">
+                Không tìm thấy dữ liệu điểm danh phù hợp trong tháng này.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredHistory.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
+              </div>
+            )}
+          </div>
+        )}
+
+        <p className="text-center mt-6 px-6 text-[10px] text-gray-400 leading-normal">
+          Dữ liệu trên bản prototype dùng để mô phỏng tương tác UAT. Mọi dữ liệu điểm danh thực tế sẽ được cập nhật từ phía HLV.
         </p>
-
-      </div>{/* /scroll */}
+      </div>
     </div>
   );
+
+  function setUnusedFilter() {
+    setActiveFilter('all');
+  }
 }

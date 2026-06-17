@@ -29,7 +29,7 @@ export type Screen =
   | 'member-package' | 'member-attendance-history' | 'member-payment-history'
   | 'member-renew-request' | 'member-session-warning' | 'member-contact'
   | 'member-makeup-register' | 'member-course-materials' | 'member-learning-progress'
-  | 'member-trial-register' | 'member-course-list' | 'member-course-detail'
+  | 'member-trial-register' | 'member-course-list' | 'member-course-detail' | 'member-cart'
   /* Documentation */
   | 'screen-flow-doc';
 
@@ -221,7 +221,7 @@ const FLOWS: Flow[] = [
     icon: <Play style={{ width: 14, height: 14 }} />,
     steps: [
       { screen: 'member-schedule', label: 'Lịch học' },
-      { screen: 'member-attendance-history', label: 'Lịch sử học' },
+      { screen: 'member-cart', label: 'Giỏ hàng' },
       { screen: 'member-payment-history', label: 'Thanh toán' },
       { screen: 'member-contact', label: 'Liên hệ Coach' },
       { screen: 'member-profile', label: 'Hồ sơ cá nhân' },
