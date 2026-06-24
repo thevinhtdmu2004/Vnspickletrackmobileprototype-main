@@ -7,7 +7,7 @@ import { useState } from 'react';
 import {
   BookOpen, Calendar, CheckCircle2, Clock,
   RefreshCw, AlertTriangle, ChevronRight,
-  Zap, Info, Send, Shield, TrendingUp, FileText
+  Zap, Info, Send, Shield, FileText
 } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════
@@ -283,7 +283,7 @@ export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = tr
             HỘI VIÊN
           </p>
           <h1 style={{ fontSize:24, fontWeight:900, color:'white', letterSpacing:'-0.5px', marginTop:2 }}>
-            Gói học của tôi
+            Gói hội viên
           </h1>
 
           {/* Segment controls */}
@@ -294,7 +294,7 @@ export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = tr
                 activeTab === 'main' ? 'bg-white text-teal-900 shadow' : 'text-white/75 hover:text-white'
               }`}
             >
-              {hasActivePackage ? 'Gói hiện tại' : 'Mua gói học'}
+              {hasActivePackage ? 'Gói hiện tại' : 'Đăng ký gói'}
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -460,28 +460,6 @@ export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = tr
                     <ChevronRight style={{ width:18, height:18, color:'rgba(255,255,255,0.6)' }} />
                   </button>
 
-                  {/* CLASS INFO strip */}
-                  <div
-                    className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
-                    style={{ background:'rgba(14,124,123,0.07)', border:'1.5px solid rgba(14,124,123,0.14)' }}
-                  >
-                    <div
-                      className="flex items-center justify-center rounded-xl flex-shrink-0"
-                      style={{ width:36, height:36, background:'rgba(14,124,123,0.12)' }}
-                    >
-                      <TrendingUp style={{ width:16, height:16, color:'#0E7C7B' }} />
-                    </div>
-                    <div className="flex-1">
-                      <p style={{ fontSize:13, fontWeight:800, color:'#0E7C7B' }}>{PACKAGE.class}</p>
-                      <p style={{ fontSize:11, color:'#6B7280', fontWeight:500, marginTop:1 }}>
-                        {PACKAGE.coach} · Thứ 3 & Thứ 6 · 18:00 – 19:30
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full" style={{ background:'#2A9D8F' }} />
-                      <span style={{ fontSize:10, fontWeight:700, color:'#2A9D8F' }}>Đang học</span>
-                    </div>
-                  </div>
                 </>
               ) : (
                 /* Non-package active banner */
@@ -489,9 +467,9 @@ export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = tr
                   <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-3 border border-amber-100">
                     <AlertTriangle size={22} />
                   </div>
-                  <h4 className="text-sm font-bold text-gray-800">Bạn chưa đăng ký khóa học học viên</h4>
+                  <h4 className="text-sm font-bold text-gray-800">Bạn chưa đăng ký gói hội viên</h4>
                   <p className="text-xs text-gray-400 mt-1 max-w-[240px] leading-relaxed">
-                    Đăng ký mua một gói học tập bên dưới để được xếp lớp, học thử và theo dõi kết quả.
+                    Chọn gói hội viên phù hợp bên dưới để đăng ký và được xếp lớp.
                   </p>
                 </div>
               )}
@@ -506,7 +484,7 @@ export function MemberPackageScreen({ onNavigate, onRenew, hasActivePackage = tr
                     <BookOpen style={{ width:13, height:13, color:'#0E7C7B' }} />
                   </div>
                   <p style={{ fontSize:12, fontWeight:900, color:'#1F2933', letterSpacing:'0.04em' }}>
-                    CÁC GÓI HỌC CÓ SẴN
+                    CÁC GÓI HỘI VIÊN CÓ SẴN
                   </p>
                 </div>
 

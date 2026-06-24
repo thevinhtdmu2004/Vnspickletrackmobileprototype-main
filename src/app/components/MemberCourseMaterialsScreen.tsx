@@ -3,9 +3,11 @@ import { ArrowLeft, FileText, FileVideo, Download, PlayCircle, BookOpen, User, C
 
 interface MemberCourseMaterialsScreenProps {
     onBack: () => void;
+    onOpenVideo?: (materialId: number) => void;
+    onOpenDocument?: (materialId: number) => void;
 }
 
-export const MemberCourseMaterialsScreen: React.FC<MemberCourseMaterialsScreenProps> = ({ onBack }) => {
+export const MemberCourseMaterialsScreen: React.FC<MemberCourseMaterialsScreenProps> = ({ onBack, onOpenVideo, onOpenDocument }) => {
     const [selectedCourse, setSelectedCourse] = useState<string>('Beginner A');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -194,17 +196,25 @@ export const MemberCourseMaterialsScreen: React.FC<MemberCourseMaterialsScreenPr
 
                                 {/* Actions */}
                                 <div className="flex gap-3">
-                                    {material.type === 'video' ? (
-                                        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-teal-50 text-teal-700 font-bold active:bg-teal-100" style={{ fontSize: 14 }}>
-                                            <PlayCircle style={{ width: 18, height: 18 }} />
-                                            Xem Video
-                                        </button>
-                                    ) : (
-                                        <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-teal-50 text-teal-700 font-bold active:bg-teal-100" style={{ fontSize: 14 }}>
-                                            <BookOpen style={{ width: 18, height: 18 }} />
-                                            Đọc tài liệu
-                                        </button>
-                                    )}
+                                {material.type === 'video' ? (
+                                    <button
+                                        onClick={() => onOpenVideo?.(material.id)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-teal-50 text-teal-700 font-bold active:bg-teal-100"
+                                        style={{ fontSize: 14 }}
+                                    >
+                                        <PlayCircle style={{ width: 18, height: 18 }} />
+                                        Xem Video
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => onOpenDocument?.(material.id)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-teal-50 text-teal-700 font-bold active:bg-teal-100"
+                                        style={{ fontSize: 14 }}
+                                    >
+                                        <BookOpen style={{ width: 18, height: 18 }} />
+                                        Đọc tài liệu
+                                    </button>
+                                )}
                                     <button className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold flex items-center justify-center active:bg-gray-50">
                                         <Download style={{ width: 18, height: 18 }} />
                                     </button>

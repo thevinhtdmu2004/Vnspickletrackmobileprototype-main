@@ -87,8 +87,11 @@ export function MemberCartScreen({
                   <span className="text-xs font-extrabold text-teal-750">{product.priceStr}</span>
                   <button
                     onClick={() => onAddToCart(product)}
-                    className="bg-teal-750 hover:bg-teal-800 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg active:scale-90 transition-transform"
-                    style={{ boxShadow: '0 2px 6px rgba(14,124,123,0.2)' }}
+                    className="text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg active:scale-90 transition-transform"
+                    style={{
+                      background: 'linear-gradient(135deg,#0E7C7B 0%,#2A9D8F 100%)',
+                      boxShadow: '0 4px 12px rgba(14,124,123,0.35)'
+                    }}
                   >
                     Thêm +
                   </button>

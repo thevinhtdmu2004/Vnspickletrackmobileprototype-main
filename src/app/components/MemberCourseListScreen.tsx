@@ -1,12 +1,13 @@
 import {
     ArrowLeft, Search, Trophy, Clock, User2, MapPin,
-    ChevronRight, Filter, Star, Info
+    ChevronRight, Filter, Star, Info, ReceiptText
 } from 'lucide-react';
 import { useState } from 'react';
 
 interface MemberCourseListScreenProps {
     onBack: () => void;
     onCourseDetail: (courseId: number) => void;
+    onPurchaseHistory?: () => void;
 }
 
 type Level = 'beginner' | 'intermediate' | 'advanced';
@@ -41,7 +42,7 @@ const COURSES: CourseItem[] = [
         price: '1.200.000đ',
         rating: 4.8,
         reviews: 24,
-        image: 'https://images.unsplash.com/photo-1695662711099-e685f403f568?w=500&auto=format&fit=crop&q=60',
+        image: 'https://media.istockphoto.com/id/2023549916/vi/anh/pickleball-v%E1%BB%A3t-v%C3%A0-b%C3%B3ng.jpg?s=612x612&w=0&k=20&c=jW1aF_O6DXdTbq14BTGVcuz194E9lfbMQolZ95z2LS8=',
     },
     {
         id: 2,
@@ -56,7 +57,7 @@ const COURSES: CourseItem[] = [
         price: '1.500.000đ',
         rating: 4.9,
         reviews: 18,
-        image: 'https://images.unsplash.com/photo-1695662711145-ab2bf6914f6b?w=500&auto=format&fit=crop&q=60',
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzLuzvX-kl3tZNDl26A7OI6JXRp657FK9Ktw&s',
     },
     {
         id: 3,
@@ -71,7 +72,7 @@ const COURSES: CourseItem[] = [
         price: '2.000.000đ',
         rating: 5.0,
         reviews: 12,
-        image: 'https://images.unsplash.com/photo-1704257121650-db7c669142ec?w=500&auto=format&fit=crop&q=60',
+        image: 'https://cdn.shopvnb.com/uploads/images/bai_viet/anh-pickleball-16-1749431315.webp',
     },
     {
         id: 4,
@@ -86,7 +87,7 @@ const COURSES: CourseItem[] = [
         price: '1.200.000đ',
         rating: 4.7,
         reviews: 15,
-        image: 'https://images.unsplash.com/photo-1684369175833-3d07e60064a3?w=500&auto=format&fit=crop&q=60',
+        image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi3jrMICqVPy3QZbigHK1H9z1LKvWxZf8d4uYaC2HY_UxurM5NFD0UqN-sC4vUptBMijU_laqwiAyGY_98zecMqGn2h45mLMhWlDYh5de6o8mqxJuBhI9w5DA38R6CaTl1ZmUp8gkNEGZZRHOEpwXxoklVjUMoBnYZcd2uAOxkjOYcr5cHs4JUYuLnZZ_E/s16000-rw/Anh-san-Pickleball.jpg',
     },
 ];
 
@@ -96,7 +97,7 @@ const LEVEL_CONFIG = {
     advanced: { label: 'Nâng cao', color: '#E76F51', bg: 'rgba(231,111,81,0.12)' },
 };
 
-export function MemberCourseListScreen({ onBack, onCourseDetail }: MemberCourseListScreenProps) {
+export function MemberCourseListScreen({ onBack, onCourseDetail, onPurchaseHistory }: MemberCourseListScreenProps) {
     const [search, setSearch] = useState('');
     const [activeLevel, setActiveLevel] = useState<'all' | Level>('all');
 
@@ -124,7 +125,7 @@ export function MemberCourseListScreen({ onBack, onCourseDetail }: MemberCourseL
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <div>
+                    <div className="flex-1 min-w-0">
                         <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.48)', fontWeight: 700, letterSpacing: '0.06em' }}>
                             HỘI VIÊN
                         </p>
@@ -132,6 +133,13 @@ export function MemberCourseListScreen({ onBack, onCourseDetail }: MemberCourseL
                             Khám phá khóa học
                         </h1>
                     </div>
+                    <button
+                        onClick={onPurchaseHistory}
+                        className="flex items-center gap-1.5 px-3.5 h-10 rounded-full bg-white/10 border border-white/20 active:bg-white/20 transition-all text-white"
+                    >
+                        <ReceiptText className="w-4 h-4" />
+                        <span style={{ fontSize: 11, fontWeight: 800 }}>Lịch sử mua</span>
+                    </button>
                 </div>
             </div>
 

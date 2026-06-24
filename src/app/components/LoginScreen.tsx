@@ -52,12 +52,12 @@ function validateLogin(account: string, pin: string): Role | null {
    COMPONENT
 ══════════════════════════════════════════════════════ */
 export function LoginScreen({ onLogin }: { onLogin: (role: Role) => void }) {
-  const [account,   setAccount]   = useState('');
-  const [pin,       setPin]       = useState('');
+  const [account,   setAccount]   = useState('member');
+  const [pin,       setPin]       = useState('222222');
   const [showPin,   setShowPin]   = useState(false);
   const [error,     setError]     = useState('');
   const [loading,   setLoading]   = useState(false);
-  const [quickRole, setQuickRole] = useState<Role | null>(null);   // quick-fill
+  const [quickRole, setQuickRole] = useState<Role | null>('member');   // quick-fill
 
   function handleLogin() {
     setError('');

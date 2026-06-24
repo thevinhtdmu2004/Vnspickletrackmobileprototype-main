@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     ArrowLeft, CheckCircle2, Clock, Calendar, User,
     MapPin, Sparkles, Phone, ChevronRight, ShieldCheck,
-    Gift, ArrowRight
+    Gift, ArrowRight, Award, BookOpen, Info
 } from 'lucide-react';
 
 interface MemberTrialRegisterScreenProps {
@@ -34,18 +34,45 @@ export const MemberTrialRegisterScreen: React.FC<MemberTrialRegisterScreenProps>
 
     const renderForm = () => (
         <div className="p-4 space-y-5">
-            {/* Banner */}
-            <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-5 text-white shadow-lg shadow-orange-500/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-                <div className="relative z-10 flex gap-4 items-center">
-                    <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 backdrop-blur-md border border-white/30">
-                        <Gift size={28} className="text-white" />
+            {/* Banner đồng bộ với bên ngoài */}
+            <div
+                className="w-full relative overflow-hidden rounded-[28px] text-left"
+                style={{
+                    background: 'linear-gradient(135deg, #111827 0%, #312E81 45%, #7C3AED 100%)',
+                    boxShadow: '0 16px 36px rgba(49,46,129,0.22)',
+                }}
+            >
+                <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at top right, rgba(255,255,255,0.34), transparent 32%), radial-gradient(circle at bottom left, rgba(34,211,238,0.24), transparent 28%)' }} />
+                <div className="absolute -top-10 -right-8 w-32 h-32 rounded-full bg-white/12 blur-2xl" />
+                <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-fuchsia-400/20 blur-2xl" />
+
+                <div className="relative p-5 text-white">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/14 text-[10px] font-bold tracking-wide border border-white/15 backdrop-blur-sm">
+                                <Calendar size={10} />
+                                Học thử 1 ngày
+                            </div>
+                            <h2 className="mt-3 text-[18px] font-black leading-tight tracking-[-0.02em]">
+                                Trải nghiệm Pickleball, đặt lịch trong 30 giây
+                            </h2>
+                            <p className="mt-1 text-[12px] text-white/78 font-medium leading-relaxed max-w-[230px]">
+                                Lớp học thử thiết kế hiện đại, linh hoạt, phù hợp người mới bắt đầu.
+                            </p>
+                        </div>
+                        <div className="shrink-0 w-12 h-12 rounded-2xl bg-white/12 border border-white/15 flex items-center justify-center backdrop-blur-sm">
+                            <Award className="w-6 h-6 text-white" />
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-xl font-black mb-1">Trải nghiệm miễn phí!</h2>
-                        <p className="text-sm font-medium text-white/90 leading-tight">
-                            Đăng ký ngay 1 buổi học thử cùng HLV chuyên nghiệp. Không phát sinh chi phí.
-                        </p>
+
+                    <div className="mt-4 inline-flex items-center gap-2 text-[12px] font-bold text-white/90">
+                        <BookOpen className="w-4 h-4" />
+                        Đăng ký ngay
+                        <ChevronRight className="w-4 h-4" />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1 text-[11px] text-white/70 font-semibold">
+                        <Info className="w-3.5 h-3.5" />
+                        Đồng bộ giao diện với banner ngoài Dashboard
                     </div>
                 </div>
             </div>
@@ -248,7 +275,7 @@ export const MemberTrialRegisterScreen: React.FC<MemberTrialRegisterScreenProps>
     const renderPostTrial = () => (
         <div className="p-4 flex flex-col pt-8">
             <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-300 to-orange-500 rounded-full mb-4 shadow-lg shadow-orange-500/30">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 shadow-lg shadow-orange-500/30 bg-gradient-to-br from-amber-300 to-orange-500">
                     <Sparkles size={32} className="text-white" />
                 </div>
                 <h2 className="text-2xl font-black text-gray-900 mb-2 leading-tight">
@@ -259,23 +286,22 @@ export const MemberTrialRegisterScreen: React.FC<MemberTrialRegisterScreenProps>
                 </p>
             </div>
 
-            {/* Special Offer Card */}
-            <div className="bg-gradient-to-br from-[#054A49] to-[#0E7C7B] rounded-3xl p-6 text-white shadow-xl shadow-teal-900/20 relative overflow-hidden mb-6">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-[#054A49] to-[#0E7C7B] p-6 text-white shadow-xl shadow-teal-900/20">
+                <div className="pointer-events-none absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
 
-                <div className="inline-block px-3 py-1 bg-amber-400 text-amber-950 text-[10px] font-black rounded-lg uppercase tracking-wider mb-4 shadow-sm">
+                <div className="mb-4 inline-block rounded-lg bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-950 shadow-sm">
                     Ưu đãi độc quyền
                 </div>
 
-                <h3 className="text-3xl font-black mb-2 leading-tight">
+                <h3 className="mb-2 text-3xl font-black leading-tight">
                     Giảm ngay 10%<br />Gói học chính thức
                 </h3>
 
-                <p className="text-teal-100 text-sm font-medium mb-6 leading-relaxed">
+                <p className="mb-6 text-sm font-medium leading-relaxed text-teal-100">
                     Đăng ký gói học ngay hôm nay để nhận ưu đãi và giữ lịch tập yêu thích của bạn với Coach!
                 </p>
 
-                <div className="space-y-3 bg-black/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10 mb-6">
+                <div className="mb-6 space-y-3 rounded-2xl border border-white/10 bg-black/10 p-4 backdrop-blur-sm">
                     <div className="flex items-center gap-2">
                         <ShieldCheck size={16} className="text-amber-400" />
                         <span className="text-sm font-bold">Cam kết chất lượng đầu ra</span>
@@ -291,16 +317,16 @@ export const MemberTrialRegisterScreen: React.FC<MemberTrialRegisterScreenProps>
                 </div>
 
                 <button
-                    onClick={() => onNavigate('member-renew-request')}
-                    className="w-full py-4 rounded-xl bg-amber-400 text-amber-950 font-black text-[15px] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                    onClick={() => onNavigate('member-course-list')}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white py-4 text-[15px] font-black text-[#054A49] shadow-lg shadow-black/10 transition-transform active:scale-[0.98]"
                 >
-                    GIA HẠN GÓI HỌC NGAY <ChevronRight size={18} />
+                    ĐĂNG KÝ GÓI HỌC NGAY <ChevronRight size={18} />
                 </button>
             </div>
 
             <button
                 onClick={onBack}
-                className="w-full py-4 rounded-2xl bg-white text-gray-600 font-bold text-sm active:bg-gray-50 transition-colors border border-gray-200"
+                className="w-full rounded-2xl border border-teal-100 bg-white py-4 text-sm font-bold text-[#054A49] shadow-sm transition-colors active:bg-teal-50"
             >
                 Để sau
             </button>
@@ -311,13 +337,20 @@ export const MemberTrialRegisterScreen: React.FC<MemberTrialRegisterScreenProps>
         <div className="flex flex-col h-full bg-[#F7F9FA]">
             {/* Header (Only for form) */}
             {step === 'form' && (
-                <div className="flex-shrink-0 relative overflow-hidden"
-                    style={{ background: 'linear-gradient(145deg,#054A49 0%,#0E7C7B 100%)' }}>
-                    <div className="absolute pointer-events-none" style={{ top: -20, right: -10, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+                <div
+                    className="flex-shrink-0 relative overflow-hidden"
+                    style={{ background: 'linear-gradient(145deg,#054A49 0%,#0E7C7B 100%)' }}
+                >
+                    <div
+                        className="absolute pointer-events-none"
+                        style={{ top: -20, right: -10, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}
+                    />
                     <div className="flex items-center gap-3 px-4 pt-12 pb-5">
-                        <button onClick={onBack}
-                            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-                            style={{ background: 'rgba(255,255,255,0.18)' }}>
+                        <button
+                            onClick={onBack}
+                            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white backdrop-blur-sm transition-transform active:scale-[0.98]"
+                            aria-label="Quay lại"
+                        >
                             <ArrowLeft style={{ width: 18, height: 18, color: 'white' }} />
                         </button>
                         <div>

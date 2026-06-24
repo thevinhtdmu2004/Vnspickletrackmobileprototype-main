@@ -1,12 +1,9 @@
 services:
   vnspickletrack-app:
-    # Sử dụng image đã được tự động build và push lên Docker Hub
-    image: thevinhtdmu2004/vnspickletrack-app:latest
     container_name: vnspickletrack-prototype
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8080:80" # Map port 8080 trên máy tính vào port 80 của Nginx trong container
-    restart: unless-stopped
-    # Nếu bạn muốn tự build lại image trên máy thay vì kéo từ Docker Hub, hãy bỏ comment 3 dòng dưới:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+      - "8080:80" # Map cổng 8080 của máy bạn vào cổng 80 trong container
+    restart: unless-stopped # Tự khởi động lại nếu bị crash hoặc restart máy chủ

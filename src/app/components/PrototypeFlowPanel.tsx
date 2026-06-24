@@ -29,7 +29,7 @@ export type Screen =
   | 'member-package' | 'member-attendance-history' | 'member-payment-history'
   | 'member-renew-request' | 'member-session-warning' | 'member-contact'
   | 'member-makeup-register' | 'member-course-materials' | 'member-learning-progress'
-  | 'member-trial-register' | 'member-course-list' | 'member-course-detail' | 'member-cart'
+  | 'member-trial-register' | 'member-course-list' | 'member-course-detail' | 'purchase-history' | 'member-cart'
   /* Documentation */
   | 'screen-flow-doc';
 

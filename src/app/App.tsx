@@ -72,12 +72,15 @@ import { MemberSessionWarningScreen } from './components/MemberSessionWarningScr
 import { MemberContactScreen } from './components/MemberContactScreen';
 import { MemberMakeupRegisterScreen } from './components/MemberMakeupRegisterScreen';
 import { MemberCourseMaterialsScreen } from './components/MemberCourseMaterialsScreen';
+import { MemberCourseVideoScreen } from './components/MemberCourseVideoScreen';
+import { MemberCourseDocumentScreen } from './components/MemberCourseDocumentScreen';
 import { MemberLearningProgressScreen } from './components/MemberLearningProgressScreen';
 import { MemberTrialRegisterScreen } from './components/MemberTrialRegisterScreen';
 import { MemberBottomNavigation } from './components/MemberBottomNavigation';
 import { MemberCartPopup } from './components/MemberCartPopup';
 import { MemberCourseListScreen } from './components/MemberCourseListScreen';
 import { MemberCourseDetailScreen } from './components/MemberCourseDetailScreen';
+import { PurchaseHistoryScreen } from './components/PurchaseHistoryScreen';
 
 /* ── Success Dialog ── */
 interface SuccessDialogProps {
@@ -238,7 +241,7 @@ function canAccessScreen(screen: Screen, role: Role) {
   const screenId = normalized as string;
 
   if (PUBLIC_SCREENS.has(screenId)) return true;
-  if (role === 'member') return screenId.startsWith('member-');
+  if (role === 'member') return screenId.startsWith('member-') || screenId === 'purchase-history';
   if (role === 'coach') return COACH_ALLOWED_SCREENS.has(screenId);
   return !ADMIN_BLOCKED_SCREENS.has(screenId);
 }
@@ -258,9 +261,19 @@ export default function App() {
     { id: '1', message: 'Hệ thống: Gói học Beginner A (12 buổi) đã được kích hoạt thành công!', time: 'Hôm qua', icon: '🎉', unread: true },
     { id: '2', message: 'Đã điểm danh: Có mặt buổi học ngày 27/04/2026.', time: '2 ngày trước', icon: '✅', unread: false }
   ]);
-  const [makeupRequests, setMakeupRequests] = useState([
-    { id: 'req_1', courseName: 'Beginner A', missedDate: '15/05/2026', desiredDate: '20/05/2026', desiredTime: '18:00 – 19:30', note: 'Em xin học bù ca tối', studentName: 'Nguyễn Văn A', status: 'pending' as const }
+  const [makeupRequests, setMakeupRequests] = useState<Array<{
+    id: string;
+    courseName: string;
+    missedDate: string;
+    desiredDate: string;
+    desiredTime: string;
+    note: string;
+    studentName: string;
+    status: 'pending' | 'approved';
+  }>>([
+    { id: 'req_1', courseName: 'Beginner A', missedDate: '15/05/2026', desiredDate: '20/05/2026', desiredTime: '18:00 – 19:30', note: 'Em xin học bù ca tối', studentName: 'Nguyễn Văn A', status: 'pending' }
   ]);
+  type MakeupRequest = (typeof makeupRequests)[number];
 
   /* ── Canteen / Cart Simulation State ── */
   const [cartItems, setCartItems] = useState<any[]>([
@@ -344,7 +357,7 @@ export default function App() {
           unread: true
         };
         setNotifications(n => [newNotif, ...n]);
-        return { ...req, status: 'approved' as const };
+        return { ...req, status: 'approved' as 'pending' | 'approved' };
       }
       return req;
     }));
@@ -875,7 +888,6 @@ export default function App() {
             onNavigate={(s) => navigate(s as Screen)}
             onNotification={() => navigate('member-session-warning')}
             hasActivePackage={hasActivePackage}
-            setHasActivePackage={setHasActivePackage}
             notifications={notifications}
             unreadNotifications={notifications.some(n => n.unread)}
             onMarkNotificationsAsRead={handleMarkNotificationsAsRead}
@@ -952,8 +964,25 @@ export default function App() {
         return (
           <MemberCourseMaterialsScreen
             onBack={goBack}
+            onOpenVideo={(materialId) => navigate(`member-course-video-${materialId}` as Screen)}
+            onOpenDocument={(materialId) => navigate(`member-course-document-${materialId}` as Screen)}
           />
         );
+
+      case 'member-course-video-2':
+        return <MemberCourseVideoScreen onBack={goBack} title="Hướng dẫn kỹ thuật Giao bóng (Serve)" courseName="Beginner A" coachName="Coach Nam" />;
+
+      case 'member-course-video-4':
+        return <MemberCourseVideoScreen onBack={goBack} title="Chiến thuật đánh đôi (Nâng cao)" courseName="Beginner B" coachName="Coach Linh" />;
+
+      case 'member-course-document-1':
+        return <MemberCourseDocumentScreen onBack={goBack} title="Luật chơi Pickleball cơ bản 2026" courseName="Beginner A" coachName="Coach Nam" contentType="pdf" />;
+
+      case 'member-course-document-3':
+        return <MemberCourseDocumentScreen onBack={goBack} title="Giáo trình thực hành Tuần 1-4" courseName="Beginner A" coachName="Coach Nam" contentType="doc" />;
+
+      case 'member-course-document-5':
+        return <MemberCourseDocumentScreen onBack={goBack} title="Lỗi thường gặp và cách khắc phục" courseName="Beginner B" coachName="Coach Linh" contentType="pdf" />;
 
       case 'member-learning-progress':
         return (
@@ -971,19 +1000,30 @@ export default function App() {
           />
         );
 
-      case 'member-course-list':
-        return (
-          <MemberCourseListScreen
-            onBack={goBack}
-            onCourseDetail={() => navigate('member-course-detail')}
-          />
-        );
+       case 'member-course-list':
+         return (
+           <MemberCourseListScreen
+             onBack={goBack}
+             onCourseDetail={() => navigate('member-course-detail')}
+             onPurchaseHistory={() => navigate('purchase-history')}
+           />
+         );
 
       case 'member-course-detail':
         return (
           <MemberCourseDetailScreen
             onBack={goBack}
             onRegister={() => showSuccess('Đăng ký khóa học thành công! HLV sẽ liên hệ sớm.', () => navigate('member-dashboard', true))}
+          />
+        );
+
+      case 'purchase-history':
+        return (
+          <PurchaseHistoryScreen
+            onBack={goBack}
+            onCourseDetail={(courseId) => navigate('member-course-detail')}
+            onViewSchedule={() => navigate('member-schedule')}
+            onContinueLearning={() => navigate('member-learning-progress')}
           />
         );
 

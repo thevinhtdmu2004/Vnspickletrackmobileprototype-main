@@ -63,7 +63,6 @@ interface MemberDashboardProps {
   onNavigate: (screen: string) => void;
   onNotification?: () => void;
   hasActivePackage?: boolean;
-  setHasActivePackage?: (val: boolean) => void;
   notifications?: any[];
   unreadNotifications?: boolean;
   onMarkNotificationsAsRead?: () => void;
@@ -77,7 +76,6 @@ interface MemberDashboardProps {
 export function MemberDashboard({
   onNavigate,
   hasActivePackage = true,
-  setHasActivePackage,
   notifications = [],
   unreadNotifications = false,
   onMarkNotificationsAsRead,
@@ -86,11 +84,8 @@ export function MemberDashboard({
 }: MemberDashboardProps) {
   const urgency = getSessionUrgency(MEMBER.remaining);
   const progress = MEMBER.remaining / MEMBER.total;   // remaining / total
-  const isLow = MEMBER.remaining <= 5;
-  const isCritical = MEMBER.remaining <= 2;
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [lockedAlert, setLockedAlert] = useState<string | null>(null);
 
   const handleOpenNotifications = () => {
     setShowNotifications(true);
@@ -99,17 +94,9 @@ export function MemberDashboard({
     }
   };
 
-  const handleActionClick = (screen: string, label: string) => {
-    // Check if the action belongs to student specific features (locked for non-active package members)
-    const isStudentFeature = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(screen);
-    
-    if (isStudentFeature && !hasActivePackage) {
-      setLockedAlert(`Tính năng "${label}" chỉ dành cho Học viên đang học. Bạn cần mua gói tập tại tab Gói Học để mở khóa tính năng này!`);
-      return;
-    }
-    
+  const handleActionClick = (screen: string) => {
     if (screen === 'member-attendance-history') {
-      onNavigate('member-schedule'); // Redirect merged history to schedule (tab 2)
+      onNavigate('member-schedule');
     } else {
       onNavigate(screen);
     }
@@ -120,7 +107,7 @@ export function MemberDashboard({
 
       {/* ════════════════════════════════════════
           HEADER
-      ════════════════════════════════════════ */}
+          ════════════════════════════════════════ */}
       <div
         className="relative overflow-hidden flex-shrink-0"
         style={{ background: 'linear-gradient(148deg,#032C2C 0%,#053E3E 30%,#075E5D 60%,#0E7C7B 85%,#1A8E87 100%)' }}
@@ -159,7 +146,7 @@ export function MemberDashboard({
                 <div className="flex items-center gap-1.5 mt-1">
                   <Award style={{ width: 11, height: 11, color: 'rgba(255,255,255,0.5)' }} />
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
-                    {hasActivePackage ? 'Học viên active' : 'Hội viên chưa có gói'}
+                    Học viên active
                   </span>
                 </div>
               </div>
@@ -205,59 +192,89 @@ export function MemberDashboard({
       <div className="flex-1 overflow-y-auto pb-28">
         <div className="px-4 pt-4 space-y-4">
 
-          {/* UAT Simulator Controls */}
-          {setHasActivePackage && (
-            <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-amber-900">UAT Simulator: Trạng thái gói học</p>
-                  <p className="text-[10px] text-amber-700">Chuyển đổi trạng thái gói học để test luồng Hội viên vs Học viên</p>
-                </div>
-                <span className="text-[9px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-lg">Demo</span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setHasActivePackage(false)}
-                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold border transition-all ${
-                    !hasActivePackage
-                      ? 'bg-amber-700 border-amber-700 text-white shadow-sm'
-                      : 'bg-white border-amber-200 text-amber-800 hover:bg-amber-100/50'
-                  }`}
-                >
-                  Chưa có gói (Hội viên)
-                </button>
-                <button
-                  onClick={() => setHasActivePackage(true)}
-                  className={`flex-1 py-2 rounded-xl text-[11px] font-bold border transition-all ${
-                    hasActivePackage
-                      ? 'bg-teal-700 border-teal-700 text-white shadow-sm'
-                      : 'bg-white border-teal-200 text-teal-800 hover:bg-teal-50'
-                  }`}
-                >
-                  Có gói học (Học viên)
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Gói học card */}
 
-          {/* Locked status banner if has no active package */}
-          {!hasActivePackage && (
-            <div className="bg-red-50 border border-red-100 p-4 rounded-3xl flex gap-3.5 shadow-sm">
-              <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={20} />
-              <div>
-                <h4 className="text-xs font-bold text-red-950">Bạn chưa đăng ký gói học</h4>
-                <p className="text-[11px] text-red-800 leading-normal mt-0.5 font-medium">
-                  Hãy đăng ký gói tập tại mục **Gói học** để được xếp lớp, xem lịch học bù, lịch sử điểm danh, giáo trình và tài liệu học tập của học viên!
-                </p>
-                <button
-                  onClick={() => onNavigate('member-package')}
-                  className="mt-2.5 bg-red-600 hover:bg-red-750 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg"
-                >
-                  Đăng ký gói ngay
-                </button>
+          {/* ─────────────────────────────────────────
+              BANNER QUẢNG CÁO / HỌC THỬ
+          ───────────────────────────────────────── */}
+          <div className="space-y-3">
+            <button
+              onClick={() => onNavigate('member-trial-register')}
+              className="w-full relative overflow-hidden rounded-[28px] text-left active:scale-[0.99] transition-transform"
+              style={{
+                background: 'linear-gradient(135deg, #111827 0%, #312E81 45%, #7C3AED 100%)',
+                boxShadow: '0 16px 36px rgba(49,46,129,0.22)',
+              }}
+            >
+              <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at top right, rgba(255,255,255,0.34), transparent 32%), radial-gradient(circle at bottom left, rgba(34,211,238,0.24), transparent 28%)' }} />
+              <div className="absolute -top-10 -right-8 w-32 h-32 rounded-full bg-white/12 blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-fuchsia-400/20 blur-2xl" />
+              <div className="relative p-5 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/14 text-[10px] font-bold tracking-wide border border-white/15 backdrop-blur-sm">
+                      <Calendar size={10} />
+                      Học thử 1 ngày
+                    </div>
+                    <h3 className="mt-3 text-[18px] font-black leading-tight tracking-[-0.02em]">
+                      Trải nghiệm Pickleball, đặt lịch trong 30 giây
+                    </h3>
+                    <p className="mt-1 text-[12px] text-white/78 font-medium leading-relaxed max-w-[230px]">
+                      Lớp học thử thiết kế hiện đại, linh hoạt, phù hợp người mới bắt đầu.
+                    </p>
+                  </div>
+                  <div className="shrink-0 w-12 h-12 rounded-2xl bg-white/12 border border-white/15 flex items-center justify-center backdrop-blur-sm">
+                    <Award className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <div className="mt-4 inline-flex items-center gap-1 text-[12px] font-bold text-white/90">
+                  Đăng ký ngay
+                  <ChevronRight className="w-4 h-4" />
+                </div>
               </div>
-            </div>
-          )}
+            </button>
+
+            <button
+              onClick={() => onNavigate('member-course-list')}
+              className="w-full relative overflow-hidden rounded-[28px] bg-white text-left active:scale-[0.99] transition-transform"
+              style={{
+                border: '1px solid rgba(168,85,247,0.14)',
+                boxShadow: '0 14px 32px rgba(15,23,42,0.08)',
+              }}
+            >
+              <div className="absolute inset-0 opacity-80" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.05), rgba(236,72,153,0.05) 45%, rgba(251,191,36,0.08))' }} />
+              <div className="h-[3px] bg-gradient-to-r from-fuchsia-500 via-pink-500 to-amber-400" />
+              <div className="relative p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-700 text-[10px] font-black tracking-wide border border-fuchsia-100">
+                      <BookOpen size={10} />
+                      Khóa học nổi bật
+                    </div>
+                    <h3 className="mt-3 text-[17px] font-black text-slate-900 leading-tight tracking-[-0.02em]">
+                      Khám phá lộ trình học phù hợp với bạn
+                    </h3>
+                    <p className="mt-1 text-[12px] text-slate-500 font-medium leading-relaxed max-w-[230px]">
+                      Xem lịch khai giảng, cấp độ, ưu đãi và chọn lớp học ngay trên mobile.
+                    </p>
+                  </div>
+                  <div className="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-fuchsia-100 via-pink-100 to-amber-100 flex items-center justify-center border border-white/70">
+                    <ShoppingCart className="w-6 h-6 text-fuchsia-700" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 font-semibold">
+                    <Info className="w-3.5 h-3.5 text-fuchsia-500" />
+                    Cập nhật liên tục
+                  </div>
+                  <div className="inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-700">
+                    Xem ngay
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
 
           {/* ─────────────────────────────────────────
               BUỔI HỌC TIẾP THEO (CLASS CARD)
@@ -312,62 +329,48 @@ export function MemberDashboard({
               THÔNG TIN SỐ BUỔI
             </p>
 
-            {hasActivePackage ? (
-              <div
-                className="rounded-3xl p-5 text-white relative overflow-hidden"
-                style={{
-                  background: urgency.gradient,
-                  boxShadow: `0 8px 20px ${urgency.shadow}`,
-                }}
-              >
-                <div className="absolute top-0 right-0 pointer-events-none" style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', transform: 'translate(20px, -20px)' }} />
-                
-                <div className="relative z-10 flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                      {MEMBER.packageName}
-                    </span>
-                    <h3 style={{ fontSize: 24, fontWeight: 900, marginTop: 8, letterSpacing: '-0.5px' }}>
-                      Còn {MEMBER.remaining} / {MEMBER.total} <span className="text-xs font-bold opacity-80">buổi học</span>
-                    </h3>
-                    <p style={{ fontSize: 11, opacity: 0.85, marginTop: 4, fontWeight: 500 }}>
-                      Thời gian học: Thứ 3 & Thứ 6 (18:00)
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => onNavigate('member-package')}
-                    className="bg-white text-teal-900 rounded-full w-10 h-10 flex items-center justify-center active:scale-90 transition-transform shadow"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+            <div
+              className="rounded-3xl p-5 text-white relative overflow-hidden"
+              style={{
+                background: urgency.gradient,
+                boxShadow: `0 8px 20px ${urgency.shadow}`,
+              }}
+            >
+              <div className="absolute top-0 right-0 pointer-events-none" style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', transform: 'translate(20px, -20px)' }} />
 
-                {/* Progress bar */}
-                <div className="mt-4">
-                  <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                    <div className="bg-white h-full rounded-full" style={{ width: `${progress * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-3xl p-5 border border-gray-150 flex items-center justify-between shadow-sm">
+              <div className="relative z-10 flex justify-between items-center">
                 <div>
-                  <p className="text-xs font-bold text-gray-800">Chưa đăng ký gói tập</p>
-                  <p className="text-[10px] text-gray-400 mt-1">Vui lòng chọn mua gói tập phía dưới</p>
+                  <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    {MEMBER.packageName}
+                  </span>
+                  <h3 style={{ fontSize: 24, fontWeight: 900, marginTop: 8, letterSpacing: '-0.5px' }}>
+                    Còn {MEMBER.remaining} / {MEMBER.total} <span className="text-xs font-bold opacity-80">buổi học</span>
+                  </h3>
+                  <p style={{ fontSize: 11, opacity: 0.85, marginTop: 4, fontWeight: 500 }}>
+                    Thời gian học: Thứ 3 & Thứ 6 (18:00)
+                  </p>
                 </div>
                 <button
                   onClick={() => onNavigate('member-package')}
-                  className="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-teal-200"
+                  className="bg-white text-teal-900 rounded-full w-10 h-10 flex items-center justify-center active:scale-90 transition-transform shadow"
                 >
-                  Mua gói
+                  <ChevronRight size={20} />
                 </button>
               </div>
-            )}
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                  <div className="bg-white h-full rounded-full" style={{ width: `${progress * 100}%` }} />
+                </div>
+              </div>
+            </div>
           </div>
 
+          
           {/* ─────────────────────────────────────────
               QUICK ACTIONS
-          ───────────────────────────────────────── */}
+              ═══════════════════════════════════════ */}
           <div>
             <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em', marginBottom: 10 }}>
               THAO TÁC NHANH
@@ -402,13 +405,13 @@ export function MemberDashboard({
                   screen: 'member-attendance-history',
                 },
                 {
-                  label: hasActivePackage ? 'Yêu cầu gia hạn' : 'Đăng ký gói học',
-                  sub: hasActivePackage ? 'Mua thêm buổi học' : 'Xem các gói học tập',
+                  label: 'Gia hạn gói hội viên',
+                  sub: 'Mua thêm buổi học',
                   icon: RefreshCw,
                   iconBg: 'rgba(244,162,97,0.14)',
                   iconColor: '#E8832A',
                   border: 'rgba(244,162,97,0.30)',
-                  screen: hasActivePackage ? 'member-renew-request' : 'member-package',
+                  screen: 'member-package',
                 },
                 {
                   label: 'Liên hệ Coach',
@@ -446,98 +449,90 @@ export function MemberDashboard({
                   border: 'rgba(14,124,123,0.18)',
                   screen: 'member-course-list',
                 },
-              ].filter(action => {
-                const isStudent = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(action.screen);
-                return !(isStudent && !hasActivePackage);
-              }).map((action, i) => {
-                const isStudent = ['member-learning-progress', 'member-schedule', 'member-attendance-history', 'member-makeup-register', 'member-course-materials'].includes(action.screen);
-                const isLocked = isStudent && !hasActivePackage;
-
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleActionClick(action.screen, action.label)}
-                    className="flex flex-col gap-3 p-4 bg-white rounded-2xl text-left active:scale-95 transition-all relative overflow-hidden"
-                    style={{
-                      border: `1.5px solid ${isLocked ? 'rgba(0,0,0,0.04)' : action.border}`,
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-                      opacity: isLocked ? 0.45 : 1,
-                    }}
+                {
+                  label: 'Cửa hàng',
+                  sub: 'Mua thêm buổi học',
+                  icon: ShoppingCart,
+                  iconBg: 'rgba(168,85,247,0.10)',
+                  iconColor: '#7C3AED',
+                  border: 'rgba(168,85,247,0.18)',
+                  screen: 'member-cart',
+                },
+              ].map((action, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleActionClick(action.screen)}
+                  className="flex flex-col gap-3 p-4 bg-white rounded-2xl text-left active:scale-95 transition-all relative overflow-hidden"
+                  style={{
+                    border: `1.5px solid ${action.border}`,
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                  }}
+                >
+                  {/* Icon */}
+                  <div
+                    className="flex items-center justify-center rounded-xl"
+                    style={{ width: 40, height: 40, background: action.iconBg }}
                   >
-                    {/* Icon */}
-                    <div
-                      className="flex items-center justify-center rounded-xl"
-                      style={{ width: 40, height: 40, background: action.iconBg }}
-                    >
-                      <action.icon style={{ width: 18, height: 18, color: action.iconColor }} />
-                    </div>
-                    {/* Label */}
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 800, color: '#1F2933', lineHeight: 1.25 }}>
-                        {action.label}
-                      </p>
-                      <p style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500, marginTop: 2 }}>
-                        {action.sub}
-                      </p>
-                    </div>
-
-                    {isLocked && (
-                      <span className="absolute top-2 right-2 bg-gray-100 text-gray-500 rounded text-[8px] font-bold px-1.5 py-0.5">
-                        Khóa
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                    <action.icon style={{ width: 18, height: 18, color: action.iconColor }} />
+                  </div>
+                  {/* Label */}
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#1F2933', lineHeight: 1.25 }}>
+                      {action.label}
+                    </p>
+                    <p style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500, marginTop: 2 }}>
+                      {action.sub}
+                    </p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* ─────────────────────────────────────────
               THỐNG KÊ THÁNG NÀY
           ───────────────────────────────────────── */}
-          {hasActivePackage && (
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em' }}>
-                  THÁNG NÀY
-                </p>
-                <button
-                  onClick={() => handleActionClick('member-attendance-history', 'Lịch sử học')}
-                  className="flex items-center gap-1 active:opacity-60"
-                >
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7C7B' }}>Chi tiết</span>
-                  <ChevronRight style={{ width: 13, height: 13, color: '#0E7C7B' }} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2.5">
-                {MONTHLY_STATS.map((stat, i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-2xl px-3 py-3 text-center"
-                    style={{
-                      border: '1px solid rgba(0,0,0,0.06)',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-                    }}
-                  >
-                    <div
-                      className="flex items-center justify-center rounded-xl mx-auto mb-2"
-                      style={{ width: 32, height: 32, background: stat.bg }}
-                    >
-                      <stat.icon style={{ width: 14, height: 14, color: stat.color }} />
-                    </div>
-                    <p className="text-sm font-black text-gray-800 leading-none">
-                      {stat.value}
-                      <span className="text-[10px] font-semibold text-gray-400 ml-0.5">{stat.unit}</span>
-                    </p>
-                    <p className="text-[9px] font-bold text-gray-400 mt-1 leading-tight">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <p style={{ fontSize: 12, fontWeight: 800, color: '#374151', letterSpacing: '0.04em' }}>
+                THÁNG NÀY
+              </p>
+              <button
+                onClick={() => handleActionClick('member-attendance-history')}
+                className="flex items-center gap-1 active:opacity-60"
+              >
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#0E7C7B' }}>Chi tiết</span>
+                <ChevronRight style={{ width: 13, height: 13, color: '#0E7C7B' }} />
+              </button>
             </div>
-          )}
+
+            <div className="grid grid-cols-3 gap-2.5">
+              {MONTHLY_STATS.map((stat, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl px-3 py-3 text-center"
+                  style={{
+                    border: '1px solid rgba(0,0,0,0.06)',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-center rounded-xl mx-auto mb-2"
+                    style={{ width: 32, height: 32, background: stat.bg }}
+                  >
+                    <stat.icon style={{ width: 14, height: 14, color: stat.color }} />
+                  </div>
+                  <p className="text-sm font-black text-gray-800 leading-none">
+                    {stat.value}
+                    <span className="text-[10px] font-semibold text-gray-400 ml-0.5">{stat.unit}</span>
+                  </p>
+                  <p className="text-[9px] font-bold text-gray-400 mt-1 leading-tight">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -605,48 +600,6 @@ export function MemberDashboard({
                 className="w-full mt-6 bg-teal-700 active:bg-teal-800 text-white font-bold py-3.5 rounded-2xl text-xs active:scale-95 transition-transform"
               >
                 Đóng thông báo
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ════════════════════════════════════════
-          LOCKED ALERT DIALOG
-      ════════════════════════════════════════ */}
-      {lockedAlert && (
-        <div
-          className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
-          onClick={() => setLockedAlert(null)}
-        >
-          <div
-            className="bg-white rounded-3xl p-5 w-full max-w-[320px] shadow-2xl relative space-y-4 text-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 bg-red-50 text-red-500 border border-red-100 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle size={22} />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-gray-800 text-sm">Tính năng bị hạn chế</h3>
-              <p className="text-[11px] text-gray-500 leading-normal mt-2">
-                {lockedAlert}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setLockedAlert(null)}
-                className="flex-1 bg-gray-100 active:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-transform"
-              >
-                Đóng
-              </button>
-              <button
-                onClick={() => {
-                  setLockedAlert(null);
-                  onNavigate('member-package');
-                }}
-                className="flex-1 bg-teal-700 active:bg-teal-800 text-white font-bold py-2.5 rounded-xl text-xs transition-transform"
-              >
-                Mua gói học
               </button>
             </div>
           </div>

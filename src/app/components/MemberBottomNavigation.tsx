@@ -3,7 +3,7 @@ import { Home, Calendar, Archive, ShoppingBag, User } from 'lucide-react';
 const TABS = [
   { id: 'member-dashboard',           icon: Home,         label: 'Trang chủ' },
   { id: 'member-schedule',            icon: Calendar,     label: 'Lịch học'  },
-  { id: 'member-package',             icon: Archive,      label: 'Gói học'   },
+  { id: 'member-package',             icon: Archive,      label: 'Gói hội viên' },
   { id: 'member-cart',                icon: ShoppingBag,  label: 'Cửa hàng'  },
   { id: 'member-profile',             icon: User,         label: 'Cá nhân'   },
 ] as const;

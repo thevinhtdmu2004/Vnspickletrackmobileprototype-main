@@ -26,7 +26,7 @@ export function MemberCourseDetailScreen({ onBack, onRegister }: MemberCourseDet
                 {/* ── Hero Image ── */}
                 <div className="relative h-72">
                     <img
-                        src="https://images.unsplash.com/photo-1695662711099-e685f403f568?w=800&auto=format&fit=crop&q=80"
+                        src="https://media.istockphoto.com/id/2023549916/vi/anh/pickleball-v%E1%BB%A3t-v%C3%A0-b%C3%B3ng.jpg?s=612x612&w=0&k=20&c=jW1aF_O6DXdTbq14BTGVcuz194E9lfbMQolZ95z2LS8="
                         alt="Course Hero"
                         className="w-full h-full object-cover"
                     />

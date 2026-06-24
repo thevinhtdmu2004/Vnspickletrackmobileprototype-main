@@ -181,7 +181,7 @@ const MONTHS = [
 
 const STATUS_CFG: Record<SessionStatus, {
   label: string; color: string; bg: string; border: string;
-  Icon:  React.FC<{ style?: React.CSSProperties }>;
+  Icon:  React.FC<{ style?: React.CSSProperties; className?: string }>;
 }> = {
   next:     { label:'Sắp tới',   color:'#0E7C7B', bg:'rgba(14,124,123,0.12)',  border:'rgba(14,124,123,0.28)',  Icon: Zap           },
   upcoming: { label:'Sắp tới',   color:'#6B7280', bg:'rgba(107,114,128,0.09)', border:'rgba(107,114,128,0.22)', Icon: Calendar      },
@@ -195,7 +195,7 @@ const STATUS_CFG: Record<SessionStatus, {
 /* ══════════════════════════════════════════════════════
    SUB-COMPONENTS
    ══════════════════════════════════════════════════════ */
-function WeekDayCell({ day }: { day: WeekDay }) {
+function WeekDayCell({ day, onClick, active }: { day: WeekDay; onClick?: () => void; active?: boolean }) {
   const isSession = day.hasSession;
   const isToday   = day.isToday;
   const isPast    = !isToday && day.status && ['present','leave','late','absent'].includes(day.status ?? '');
@@ -208,7 +208,11 @@ function WeekDayCell({ day }: { day: WeekDay }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1.5 active:scale-95 transition-transform ${active ? 'scale-105' : ''}`}
+    >
       <span style={{ fontSize: 10, fontWeight: isToday ? 800 : 600, color: isToday ? 'white' : 'rgba(255,255,255,0.45)' }}>
         {day.dayShort}
       </span>
@@ -226,7 +230,7 @@ function WeekDayCell({ day }: { day: WeekDay }) {
         </span>
       </div>
       <div className="rounded-full w-1 h-1" style={{ background: dotColor, opacity: isSession ? 1 : 0 }} />
-    </div>
+    </button>
   );
 }
 
@@ -317,11 +321,17 @@ function SessionCard({ session, onNavigate }: { session: Session; onNavigate?: (
 export function MemberScheduleScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
   const [activeSegment, setActiveSegment] = useState<'upcoming' | 'history'>('upcoming');
   const [monthIdx, setMonthIdx] = useState(1); // default = Tháng 04/2026
+  const [selectedDayNum, setSelectedDayNum] = useState<number>(29);
 
   const monthNum = MONTHS[monthIdx].num;
 
   // upcoming list
-  const upcomingList = ALL_SESSIONS.filter(s => ['next', 'upcoming'].includes(s.status));
+  const upcomingList = ALL_SESSIONS.filter(s => ['next', 'upcoming'].includes(s.status) && s.month === monthNum);
+  const selectedDay = WEEK_DAYS.find(day => day.dayNum === selectedDayNum && day.monthNum === monthNum) ?? WEEK_DAYS.find(day => day.isToday);
+  const selectedUpcomingList = upcomingList.filter(session => {
+    if (!selectedDay) return true;
+    return session.dayNum === selectedDay.dayNum && session.month === selectedDay.monthNum;
+  });
 
   // history list (filtered by month)
   const historyList = ALL_SESSIONS.filter(s =>
@@ -389,40 +399,76 @@ export function MemberScheduleScreen({ onNavigate }: { onNavigate?: (screen: str
 
           {/* Selector dynamically shown based on tab */}
           {activeSegment === 'upcoming' ? (
-            <div className="relative pb-2 pt-2">
-              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.40)', fontWeight: 700, letterSpacing: '0.07em', marginBottom: 6 }}>
-                TUẦN NÀY · 27 Th4 – 3 Th5
-              </p>
-              <div className="flex items-start justify-between">
-                {WEEK_DAYS.map((day, i) => (
-                  <WeekDayCell key={i} day={day} />
-                ))}
+            <div className="mt-2">
+              <span className="text-xs text-white/75 font-semibold">Chọn tháng:</span>
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                {MONTHS.map((month, idx) => {
+                  const active = idx === monthIdx;
+                  return (
+                    <button
+                      key={month.key}
+                      onClick={() => {
+                        setMonthIdx(idx);
+                        setUnusedFilter();
+                      }}
+                      className={`shrink-0 px-3 py-2 rounded-xl text-xs font-extrabold transition-all active:scale-95 ${
+                        active
+                          ? 'bg-white text-teal-900 shadow'
+                          : 'bg-white/12 text-white/80 border border-white/15 hover:bg-white/18'
+                      }`}
+                    >
+                      {month.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="relative pb-2 pt-3">
+                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.40)', fontWeight: 700, letterSpacing: '0.07em', marginBottom: 6 }}>
+                  TUẦN NÀY · {MONTHS[monthIdx].label.replace('Tháng ', '')}
+                </p>
+                <div className="flex items-start justify-between">
+                  {WEEK_DAYS.map((day, i) => (
+                    <WeekDayCell
+                      key={i}
+                      day={day}
+                      active={selectedDay?.dayNum === day.dayNum && selectedDay?.monthNum === day.monthNum}
+                      onClick={() => {
+                        setSelectedDayNum(day.dayNum);
+                        const nextMonthIdx = MONTHS.findIndex(m => m.num === day.monthNum);
+                        if (nextMonthIdx >= 0 && day.monthNum !== monthNum) {
+                          setMonthIdx(nextMonthIdx);
+                        }
+                        setUnusedFilter();
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-white/75 font-semibold">Chọn bộ lọc tháng:</span>
-              <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.13)', border: '1px solid rgba(255,255,255,0.2)' }}
-              >
-                <button
-                  onClick={() => { setMonthIdx(i => Math.max(0, i - 1)); setUnusedFilter(); }}
-                  disabled={monthIdx <= 0}
-                  className="disabled:opacity-30 active:scale-90 transition-transform"
-                >
-                  <ChevronLeft className="w-4 h-4 text-white" />
-                </button>
-                <span className="text-xs font-extrabold text-white min-w-[96px] text-center">
-                  {MONTHS[monthIdx].label}
-                </span>
-                <button
-                  onClick={() => { setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1)); setUnusedFilter(); }}
-                  disabled={monthIdx >= MONTHS.length - 1}
-                  className="disabled:opacity-30 active:scale-90 transition-transform"
-                >
-                  <ChevronRight className="w-4 h-4 text-white" />
-                </button>
+            <div className="mt-2">
+              <span className="text-xs text-white/75 font-semibold">Chọn tháng:</span>
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                {MONTHS.map((month, idx) => {
+                  const active = idx === monthIdx;
+                  return (
+                    <button
+                      key={month.key}
+                      onClick={() => {
+                        setMonthIdx(idx);
+                        setUnusedFilter();
+                      }}
+                      className={`shrink-0 px-3 py-2 rounded-xl text-xs font-extrabold transition-all active:scale-95 ${
+                        active
+                          ? 'bg-white text-teal-900 shadow'
+                          : 'bg-white/12 text-white/80 border border-white/15 hover:bg-white/18'
+                      }`}
+                    >
+                      {month.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -455,15 +501,19 @@ export function MemberScheduleScreen({ onNavigate }: { onNavigate?: (screen: str
                   <span className="text-[10px] text-teal-700 font-extrabold">Buổi kế tiếp</span>
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 900, color: '#1F2933' }}>
-                  {NEXT_SESSION_LABEL}
+                  {selectedDay ? `${selectedDay.dayShort}, ${selectedDay.dayNum}/${monthNum}` : NEXT_SESSION_LABEL}
                 </span>
-                <span className="text-[9px] text-gray-400 mt-0.5">Thứ Tư, 29/04/2026</span>
+                <span className="text-[9px] text-gray-400 mt-0.5">
+                  {selectedDay ? `Th.${monthNum} · đã chọn từ hàng thứ` : 'Thứ Tư, 29/04/2026'}
+                </span>
               </div>
             </div>
 
             {/* List */}
             <div className="space-y-3">
-              {upcomingList.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
+              {selectedUpcomingList.length > 0
+                ? selectedUpcomingList.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)
+                : upcomingList.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
             </div>
 
             {/* Footer */}
