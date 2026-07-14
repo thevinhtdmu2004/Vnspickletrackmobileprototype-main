@@ -21,13 +21,16 @@ The database must support:
 
 ## 2. Recommended MVP Database Direction
 
-For the first production MVP, recommended option:
+Accepted backend database:
 
 ```text
-SQLite local-first + manual backup/export
+PostgreSQL 18 in Docker for local development
+PostgreSQL-compatible managed service for production
 ```
 
-This can later evolve to cloud sync if needed. Cloud sync, multi-device conflict handling and payment gateway integration require separate architecture decisions.
+Schema changes are managed through Entity Framework Core migrations. Local
+development uses `backend/compose.yaml`. Offline synchronization and payment
+gateway integration remain separate architecture decisions.
 
 ---
 
@@ -52,17 +55,41 @@ Users
 Members
 Coaches
 Classes
-ClassMembers
+ClassEnrollments
 Sessions
 AttendanceRecords
 Packages
 RenewalRequests
 PaymentRenewals
 PackageLedgerEntries
+MembershipPlans
+MembershipPlanBenefits
+MembershipRequests
+MembershipSubscriptions
+Courts
+CourtBookings
+CourtOccupancies
+Invoices
+InvoiceLines
+Payments
+PaymentAllocations
+Refunds
+InventoryItems
+InventoryMovements
+PosSales
+PosSaleLines
+EquipmentRentalOrders
+EquipmentRentalOrderItems
 BackupRecords
 AuditLogs
 SchemaMigrations
 ```
+
+Current implementation note:
+The current backend model has been extended in code with a unified Code First
+mapping for membership, court occupancy, invoice/payment, POS, and equipment
+rental. See `UNIFIED_CODE_FIRST_MODEL.md` for the approved merge notes and
+source-table mapping from external database drafts.
 
 ---
 

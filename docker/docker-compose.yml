@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: vnspickletrack-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pickletrack}
+      POSTGRES_USER: ${POSTGRES_USER:-pickletrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pickletrack_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ../database/postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-pickletrack} -d $${POSTGRES_DB:-pickletrack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: vnspickletrack-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@vnspickletrack.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - ../database/pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+  backend-api:
+    container_name: vnspickletrack-backend
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=${POSTGRES_DB:-pickletrack};Username=${POSTGRES_USER:-pickletrack};Password=${POSTGRES_PASSWORD:-pickletrack_dev}
+      Jwt__Issuer: Vns.PickleTrack.Api
+      Jwt__Audience: Vns.PickleTrack.Mobile
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:-development-only-signing-key-change-before-production}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN:-http://localhost:8080}
+      Database__ApplyMigrationsOnStartup: "true"
+      Database__SeedDemoData: "true"
+    ports:
+      - "${API_PORT:-5080}:8080"
+
+  frontend-app:
+    container_name: vnspickletrack-frontend
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    restart: unless-stopped

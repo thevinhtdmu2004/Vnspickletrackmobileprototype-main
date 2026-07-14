@@ -17,6 +17,7 @@ The prototype currently uses mock data. These documents define the target data c
 | `TABLE_SPECIFICATIONS.md` | Draft table specifications and constraints |
 | `MIGRATION_STRATEGY.md` | Migration/versioning strategy |
 | `SEED_DATA_STRATEGY.md` | Demo and initial seed data strategy |
+| `UNIFIED_CODE_FIRST_MODEL.md` | Approved mapping for the unified Code First model |
 
 ---
 

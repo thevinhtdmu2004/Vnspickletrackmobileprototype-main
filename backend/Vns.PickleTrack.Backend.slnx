@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Vns.PickleTrack.Api/Vns.PickleTrack.Api.csproj" />
+    <Project Path="src/Vns.PickleTrack.Application/Vns.PickleTrack.Application.csproj" />
+    <Project Path="src/Vns.PickleTrack.Domain/Vns.PickleTrack.Domain.csproj" />
+    <Project Path="src/Vns.PickleTrack.Infrastructure/Vns.PickleTrack.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vns.PickleTrack.Architecture.Tests/Vns.PickleTrack.Architecture.Tests.csproj" />
+    <Project Path="tests/Vns.PickleTrack.Domain.UnitTests/Vns.PickleTrack.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>
